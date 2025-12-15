@@ -1,0 +1,19 @@
+# Ignore environment variable files
+.env
+*.env
+
+# Ignore Python virtual environments
+.venv/
+venv/
+
+# Ignore cache and build artifacts
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+build/
+dist/
+
+# Ignore git files
+.git/
+.gitignore

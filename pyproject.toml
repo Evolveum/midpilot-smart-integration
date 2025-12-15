@@ -1,0 +1,71 @@
+# Copyright (c) 2010-2025 Evolveum and contributors
+#
+# Licensed under the EUPL-1.2 or later.
+
+[project]
+name = "smart-integration-ms"
+version = "0.1.0"
+description = "Smart Integration Microservice for schema matching, mapping, delineation and correlation."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115.12",
+    "uvicorn[standard]>=0.34.1",
+    "pydantic>=2.11.3",
+    "pydantic-settings>=2.2.1",
+    "colorlog>=6.7.0",
+    "httpx>=0.28.1",
+    "langchain>=0.3.26",
+    "langchain-openai>=0.3.28",
+    "langfuse>=3.3.0",
+    "jinja2>=3.1.6",
+]
+
+[dependency-groups]
+dev = [
+    "mypy>=1.0",
+    "pytest>=7.4.2",
+    "pytest-asyncio>=0.21.0",
+    "poethepoet>=0.36.0",
+    "ruff>=0.12.2",
+    "pre-commit>=4.2.0",
+    "pytest-watcher>=0.4.3",
+]
+
+# until uv implements task runner we use poethepoet
+# https://github.com/astral-sh/uv/issues/5903
+[tool.poe.tasks]
+start.cmd = "server.py"
+start.envfile = ".env"
+test.cmd = "pytest"
+test.envfile = ".env.test"
+test-watch.cmd = "ptw ."
+test-watch.envfile = ".env.test"
+typecheck = "mypy . --exclude=.venv"
+stylecheck = "ruff format --diff"
+lint = "ruff check"
+fix = [
+  { cmd = "ruff check  --fix" },
+  { cmd = "ruff format" },
+]
+qa = ["typecheck", "lint", "stylecheck", "test test/unit"]
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I", "T201" ]
+
+[tool.mypy]
+python_version = "3.12"
+plugins = ['pydantic.mypy']
+files = ["src", "test"]
+explicit_package_bases = true
+
+[tool.pytest.ini_options]
+addopts = "-ra -q"
+testpaths = ["test"]
+
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"

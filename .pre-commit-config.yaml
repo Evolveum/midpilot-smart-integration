@@ -1,0 +1,33 @@
+repos:
+  - repo: local
+    hooks:
+      - id: smart-integration-typecheck
+        name: smart-integration-typecheck
+        entry: uv run poe typecheck
+        language: system
+        types: [python]
+        pass_filenames: false
+  - repo: local
+    hooks:
+      - id: smart-integration-lint
+        name: smart-integration-lint
+        entry: uv run poe lint
+        language: system
+        types: [python]
+        pass_filenames: false
+  - repo: local
+    hooks:
+      - id: smart-integration-stylecheck
+        name: smart-integration-stylecheck
+        entry: uv run poe stylecheck
+        language: system
+        types: [python]
+        pass_filenames: false
+  - repo: local
+    hooks:
+      - id: smart-integration-unit-tests
+        name: smart-integration-unit-tests
+        entry: uv run poe test test/unit
+        language: system
+        types: [python]
+        pass_filenames: false
