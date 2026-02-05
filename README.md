@@ -146,6 +146,8 @@ For development and testing purposes is every api request and llm call traced wi
 By default is langfuse tracing disabled, you can enable it by configuration:
 
 ```
+# configure langfuse host
+LANGFUSE__HOST=https://my-langfuse-host.xyz
 # configure correct langfuse project keys
 LANGFUSE__SECRET_KEY=project-secret-key
 LANGFUSE__PUBLIC_KEY=project-public-key
