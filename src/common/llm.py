@@ -11,7 +11,7 @@ from langchain_openai import ChatOpenAI
 from ..config import config
 
 
-def get_default_llm(temperature: float = 0.0) -> ChatOpenAI:
+def get_default_llm(temperature: float = 1.0) -> ChatOpenAI:
     """
     Create and return a ChatOpenAI LLM instance with default parameters.
 
