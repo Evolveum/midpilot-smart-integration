@@ -65,16 +65,20 @@ class Delineation(BaseModel):
 parser: PydanticOutputParser[Delineation] = PydanticOutputParser(pydantic_object=Delineation)
 
 template = """
-Your task is to generate midPoint Query Language (MQL) filters for exactly one object class.
-Each filter encodes a single delineation rule for that class, partitioning its dataset accordingly.
-One response contains one object class with **multiple** mutually-exclusive rules.
+You are given schema and statistical characteristics of the dataset representing a single object class.
+Your task is to find patterns in the data that are subject to so-called delineation - the data is devided into smaller subsets that logically (and according the rules below) belongs together.
+Next you will generate filters to query each subset in midPoint Query Language (MQL).
+Each filter encodes a single delineation rule for that object class, partitioning its dataset accordingly.
+The response contains data related to given object class with **multiple** mutually-exclusive rules.
 Ensure every rule is valid MQL using the midPoint data model and follows all quoting and syntax conventions.
 
 ## ⚠️ IMPORTANT (IGA CONTEXT)
 - These delineation filters are used in **Identity Governance & Administration (IGA)**.
 - Filters MUST rely only on **IGA-relevant resource attributes** (e.g. employeeNumber, uid, login, dn, groupType, entitlement identifiers).
-- **Stability requirement:** use only **low-churn** attributes that are stable over time (identifiers, technical types, DN/OU scope, technical prefixes/suffixes).
-  Avoid high-churn fields (e.g., manager/supervisor references, volatile org metadata).
+- **Stability requirement:**
+  - The delineation rule identifies a pattern/category in the data that is expected to be stable and it is unlikely that data changes category over time.
+  - Therefore use only attributes it's values that are expected to be stable and constant over time (e.g., identifiers, technical types, DN/OU scope, technical prefixes/suffixes, ...).
+  - Avoid using attributes and it's values that are likely to change (e.g., manager/supervisor references, volatile org metadata, ...).
 - DO NOT use personal data such as names, surnames, addresses, phone numbers, emails, locations, or descriptions as filter criteria.
 - Any rule based on such personal information is INVALID.
 - It is valid that sometimes there is only **one rule** for the whole object class:
