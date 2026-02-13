@@ -73,6 +73,8 @@ Ensure every rule is valid MQL using the midPoint data model and follows all quo
 ## ⚠️ IMPORTANT (IGA CONTEXT)
 - These delineation filters are used in **Identity Governance & Administration (IGA)**.
 - Filters MUST rely only on **IGA-relevant resource attributes** (e.g. employeeNumber, uid, login, dn, groupType, entitlement identifiers).
+- **Stability requirement:** use only **low-churn** attributes that are stable over time (identifiers, technical types, DN/OU scope, technical prefixes/suffixes).
+  Avoid high-churn fields (e.g., manager/supervisor references, volatile org metadata).
 - DO NOT use personal data such as names, surnames, addresses, phone numbers, emails, locations, or descriptions as filter criteria.
 - Any rule based on such personal information is INVALID.
 - It is valid that sometimes there is only **one rule** for the whole object class:
@@ -81,14 +83,14 @@ Ensure every rule is valid MQL using the midPoint data model and follows all quo
 
 ## Special Guidance for Rule Construction
 - If the same attribute shows both **prefix** and **suffix** patterns, choose **only one** type of patterning (whichever provides clearer partitioning). Do not emit both for the same attribute.
-- If an attribute is **present for some objects but missing for others**, this difference itself is an important delineation criterion. You may create rules based on **existence** checks using `path exists` / `path not exists` (e.g. `c:attributes/ri:employeeNumber exists`).
+- If an attribute is **present for some objects but missing for others**, this difference itself is an important delineation criterion. You may create rules based on **existence** checks using `path exists` / `path not exists` (e.g. `employeeNumber exists`).
 - Rules may be composite: e.g. one branch checks presence of an identifier, while another branch uses prefixes for specific values, and a final branch covers the remainder.
   Composite rules may combine multiple attributes **only if a dependency between them is explicitly shown in the `crosstabs` section**.
   If no such crosstab evidence exists, treat the attributes separately in different rules.
 - Always ensure rules are **mutually exclusive** and collectively exhaustive (include a catch-all if necessary).
 - Only combine attributes into one rule if there is statistical evidence of dependency between them (e.g. provided in `crosstabs`).
 - If no crosstab shows dependency, treat attributes independently and do not artificially combine them in one filter.
-- The number of delineation rules should be reasonable. In practice, one object class is usually partitioned into **fewer than 5 groups**.
+- The number of delineation rules should be reasonable. In practice, one object class is usually partitioned into **fewer than 10 groups**.
   Avoid over-fragmentation into many small rules; prefer broader, meaningful partitions.
 
 ## Simplicity-First & Complexity Guard (add-on)
@@ -110,7 +112,7 @@ Fallback behavior:
 When signals overlap (e.g., administrative/service indicators vs. presence of authoritative identifiers), enforce **hierarchical rules**:
 1) **Order signals by priority** from strongest to weakest. Typical IGA order:
    - Administrative/service indicators in technical IDs (prefix/suffix patterns in uid/login/accountId).
-   - Authoritative identifiers and their presence/absence (**`path exists` / `path not exists`**, e.g., `c:attributes/ri:employeeNumber exists`).
+   - Authoritative identifiers and their presence/absence (**`path exists` / `path not exists`**, e.g., `employeeNumber exists`).
    - Organizational context via DN (`DNsuffix` → use `baseContextFilter`).
    - Other stable technical attributes (account type, groupType, department codes).
    - Catch-all.
@@ -148,9 +150,9 @@ Assume prioritized predicates `PRIMARY_i` (MQL expressions for each priority):
 ## General Constraints
 - Do not use the `kind` or `intent` attributes in the filter expression itself.
 - Do not use any timestamp or date attributes in the filter expression.
-- NEVER use `c:attributes/ri:description` in the filter expression.
+- NEVER use `description` in the filter expression.
 - You are predicting `(kind, intent)` as labels for each rule based on other attributes, but those labels must **not** appear in the MQL.
-- When referencing an attribute in your filter, always use the name as-is (e.g. `c:attributes/ri:fullname`).
+- When referencing an attribute in your filter, always use the name as-is (e.g. `fullname`).
 - Each `(kind, intent)` pair must be **unique**. Do not define more than one rule for the same combination of kind and intent.
 - Rules must not include any personal information.
 
@@ -159,17 +161,17 @@ Assume prioritized predicates `PRIMARY_i` (MQL expressions for each priority):
 2. **suffix** → use `endsWith`
 3. **firstToken** → typically `startsWith`
 4. **lastToken** → typically `endsWith`
-5. **DNsuffix** → custom value pattern for LDAP `c:attributes/ri:dn`, matching the suffix of the DN starting from the first `ou` RDN.
+5. **DNsuffix** → custom value pattern for LDAP `dn`, matching the suffix of the DN starting from the first `ou` RDN.
 
 ### Special Handling for `DNsuffix`
-- When a rule leverages `DNsuffix` on `c:attributes/ri:dn`, specify the DN base(s) using `baseContextFilter`.
+- When a rule leverages `DNsuffix` on `dn`, specify the DN base(s) using `baseContextFilter`.
 - You may also include additional attribute-level expressions in `filter`.
 - The effective rule condition is:
   **AND of all items in `baseContextFilter`** AND **AND of all items in `filter`** (if present).
 
 ## Schema Constraints
 - `filter` is a list of MQL expressions; the effective rule filter is the logical AND of all list items.
-- baseContextFilter MUST be a single string and MUST start with `c:attributes/ri:dn =`. Do not use any other MQL in baseContextFilter.
+- baseContextFilter MUST be a single string and MUST start with `dn =`. Do not use any other MQL in baseContextFilter.
 - Both fields may be present simultaneously in a single rule; evaluate the final rule as:
   `AND(baseContextFilter) AND AND(filter)`.
 - All rules for an object class must be mutually exclusive (their evaluated conditions must not overlap).
