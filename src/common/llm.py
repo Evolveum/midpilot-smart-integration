@@ -24,7 +24,7 @@ def get_default_llm(temperature: float = 1.0) -> ChatOpenAI:
         model_name=config.llm.model_name,
         request_timeout=config.llm.request_timeout,
         temperature=temperature,
-        reasoning_effort="low",
+        reasoning_effort="high",
         extra_body=config.llm.extra_body,
     )
 
