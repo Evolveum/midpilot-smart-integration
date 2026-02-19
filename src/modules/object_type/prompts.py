@@ -98,7 +98,9 @@ Ensure every rule is valid MQL using the midPoint data model and follows all quo
   Avoid over-fragmentation into many small rules; prefer broader, meaningful partitions.
 
 ## Simplicity-First & Complexity Guard (add-on)
-Prefer simple, robust delineations. If a rule would become too complex, fall back to a single-rule delineation (no `filter`, no `baseContextFilter`).
+- Prefer simple, robust delineations.
+- If a rule would become too complex, fall back to a single-rule delineation (no `filter`, no `baseContextFilter`).
+- If the rule can be expressed by both, prefer simpler `baseContextFilter` over `filter`
 
 Trigger the fallback when ANY of these holds:
 - A rule needs more than 5 disjuncts (more than three `or` clauses) on the same attribute.
@@ -132,6 +134,13 @@ Assume prioritized predicates `PRIMARY_i` (MQL expressions for each priority):
 - ...
 - Catch-all: `filter: ["not (PRIMARY_1)", "not (PRIMARY_2)", "not (PRIMARY_3)"]`
 *(If using DN branches, place the DN base in `baseContextFilter` and other conditions in `filter`.)*
+
+## `baseContextFilter` syntax
+- it MUST be a single string and MUST start with `c:attributes/ri:dn =`.
+- it CANNOT contain any MQL syntax
+- it MUST use `equals` operator
+- it CANNOT use other operators like `endsWith`, those are FORBIDDEN in `baseContextFilter`
+- Example: `c:attributes/ri:dn = "ou=employees,dc=example,dc=com"`
 
 ## MQL Syntax Summary
 - Attributes are never PolyString.
@@ -167,15 +176,20 @@ Assume prioritized predicates `PRIMARY_i` (MQL expressions for each priority):
 4. **lastToken** → typically `endsWith`
 5. **DNsuffix** → custom value pattern for LDAP `dn`, matching the suffix of the DN starting from the first `ou` RDN.
 
-### Special Handling for `DNsuffix`
+### `baseContextFilter` rules
+- `baseContextFilter` is used to handle special `dn` attribute in LDAP systems
 - When a rule leverages `DNsuffix` on `dn`, specify the DN base(s) using `baseContextFilter`.
-- You may also include additional attribute-level expressions in `filter`.
+- Specifying distinct `baseContextFilters` queries data from different sub-trees in LDAP what automatically fulfills requirement of rules being mutually exclusive
+- If it is possible to use distinct `baseContextFilter`, it is usualy sufficient delineation rule
+- Do not combine it with `filter` expression unless there is very good reason for it
+- For example: combine it when there are multiple rules with the same `baseContextFilter` and you need to distinguish between them
+- If using `baseContextFilter`, do not write filters that match "remaining data" by negating it in simple `filter` conditions, that is unwanted
 - The effective rule condition is:
   **AND of all items in `baseContextFilter`** AND **AND of all items in `filter`** (if present).
 
 ## Schema Constraints
 - `filter` is a list of MQL expressions; the effective rule filter is the logical AND of all list items.
-- baseContextFilter MUST be a single string and MUST start with `dn =`. Do not use any other MQL in baseContextFilter.
+- `baseContextFilter` MUST be a single string expression.
 - Both fields may be present simultaneously in a single rule; evaluate the final rule as:
   `AND(baseContextFilter) AND AND(filter)`.
 - All rules for an object class must be mutually exclusive (their evaluated conditions must not overlap).
