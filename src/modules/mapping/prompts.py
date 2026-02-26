@@ -31,20 +31,24 @@ Your task is to output **only** the Groovy statements (or a single expression) t
    * **Do not output a fixed constant** unless the examples with **non-null inputs** imply that constant unambiguously.
    * If **all example inputs are null** or the mapping is **underdetermined/contradictory**, output **exactly** `null`.
    * For sensitive fields (e.g., personal/employee numbers), **never generate random or placeholder values**; only copy/format existing inputs. If unavailable → `null`.
-5. Name-token preservation for person-like identifiers (treat as opaque text):
+5. Name-token preservation for person-like identifiers (STRICT):
    * Treat person-like identifiers (givenName, familyName, fullName, displayName, etc.) as opaque strings.
-   * Keep original tokens unchanged unless examples clearly require normalization (order, spacing, punctuation, case).
-   * Never apply semantic substitutions or “common-sense” name fixes.
-   * Never replace one token with another (e.g., John -> Jack) unless explicitly supported by examples.
-   * Never branch on specific name tokens (e.g., "John", "Jack", "Mary", ...); only branch on generic structure evidenced by examples.
-6. No unseen literal insertion (especially alphabetic words):
-   * Do not introduce string tokens that are not present in inputs or structurally required by all examples.
-   * Do not introduce any alphabetic word literal (A–Z/a–z sequences) unless it appears verbatim in example outputs
-     OR is directly copied from inputs via substring/regex capture.
+   * Allowed operations are ONLY structural normalization that does not change alphabetic tokens:
+     - trim leading/trailing whitespace
+     - collapse consecutive whitespace to a single space
+     - normalize separators/punctuation ONLY when required by all examples (e.g., normalize multiple delimiters to one, remove extra spaces around "-" if consistently required)
+     - optional case normalization ONLY if required by all examples
+   * NEVER substitute, correct, expand, or replace alphabetic tokens (e.g., TokenA→TokenB, Abbrev→Expanded, TypoLike→Corrected), even if a single example suggests it.
+   * If any example would require token substitution to match, treat it as noise/outlier; if the mapping becomes ambiguous/contradictory without guessing, output exactly `null`.
+6. No token-specific branching (STRICT):
+   * Do NOT branch on specific name words or other alphabetic literals.
+   * Forbidden patterns include (but are not limited to): `== "SomeWord"`, `!= "OtherWord"`, `switch`/`case` on strings, lookup maps keyed by alphabetic words, or regex rules that match specific words.
+   * You may branch ONLY on generic structure: nullability, type, emptiness, length, presence/position of delimiters, or generic regex shape (not specific words).
+7. No unseen literal insertion + minimal mutation + outlier handling (STRICT):
+   * Do not introduce any alphabetic word literal (A–Z/a–z sequences) unless it is copied from input via substring/regex capture.
    * Allowed literals should be structural separators/punctuation only (e.g., " ", "-", "_", ".", "@", ",") when required by the examples.
-7. Minimal mutation + outlier/typo handling:
-   * If multiple transformations fit examples, choose the one with minimal mutation of input values.
-   * Do not generalize from a single odd example or an apparent typo/anomaly; prefer the transform consistent across examples.
+   * If multiple transformations fit, choose the one with minimal mutation of input values.
+   * Do not generalize from a single odd example or apparent typo/anomaly; prefer the transform consistent across examples.
    * If the mapping is underdetermined or contradictory without guessing, output exactly `null`.
 8. The **last expression** must evaluate to the desired result.
 9. **Comments**: the script **must start with exactly one single-line Groovy comment** describing the transformation (e.g., `// Extract domain from email`). No other comments are allowed after that first line, and it MUST be identical to `description` prefixed with `// `.
