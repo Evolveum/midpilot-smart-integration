@@ -31,8 +31,23 @@ Your task is to output **only** the Groovy statements (or a single expression) t
    * **Do not output a fixed constant** unless the examples with **non-null inputs** imply that constant unambiguously.
    * If **all example inputs are null** or the mapping is **underdetermined/contradictory**, output **exactly** `null`.
    * For sensitive fields (e.g., personal/employee numbers), **never generate random or placeholder values**; only copy/format existing inputs. If unavailable → `null`.
-5. The **last expression** must evaluate to the desired result.
-6. **Comments**: the script **must start with exactly one single-line Groovy comment** describing the transformation (e.g., `// Extract domain from email`). No other comments are allowed after that first line, and it MUST be identical to `description` prefixed with `// `.
+5. Name-token preservation for person-like identifiers (treat as opaque text):
+   * Treat person-like identifiers (givenName, familyName, fullName, displayName, etc.) as opaque strings.
+   * Keep original tokens unchanged unless examples clearly require normalization (order, spacing, punctuation, case).
+   * Never apply semantic substitutions or “common-sense” name fixes.
+   * Never replace one token with another (e.g., John -> Jack) unless explicitly supported by examples.
+   * Never branch on specific name tokens (e.g., "John", "Jack", "Mary", ...); only branch on generic structure evidenced by examples.
+6. No unseen literal insertion (especially alphabetic words):
+   * Do not introduce string tokens that are not present in inputs or structurally required by all examples.
+   * Do not introduce any alphabetic word literal (A–Z/a–z sequences) unless it appears verbatim in example outputs
+     OR is directly copied from inputs via substring/regex capture.
+   * Allowed literals should be structural separators/punctuation only (e.g., " ", "-", "_", ".", "@", ",") when required by the examples.
+7. Minimal mutation + outlier/typo handling:
+   * If multiple transformations fit examples, choose the one with minimal mutation of input values.
+   * Do not generalize from a single odd example or an apparent typo/anomaly; prefer the transform consistent across examples.
+   * If the mapping is underdetermined or contradictory without guessing, output exactly `null`.
+8. The **last expression** must evaluate to the desired result.
+9. **Comments**: the script **must start with exactly one single-line Groovy comment** describing the transformation (e.g., `// Extract domain from email`). No other comments are allowed after that first line, and it MUST be identical to `description` prefixed with `// `.
 
 #### Output format (MANDATORY)
 Return **exactly one JSON object** with this shape (escape newlines as `\\n` inside the string):
