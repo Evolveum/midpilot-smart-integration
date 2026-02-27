@@ -41,17 +41,43 @@ Your task is to output **only** the Groovy statements (or a single expression) t
    * NEVER substitute, correct, expand, or replace alphabetic tokens (e.g., TokenA→TokenB, Abbrev→Expanded, TypoLike→Corrected), even if a single example suggests it.
    * If any example would require token substitution to match, treat it as noise/outlier; if the mapping becomes ambiguous/contradictory without guessing, output exactly `null`.
 6. No token-specific branching (STRICT):
-   * Do NOT branch on specific name words or other alphabetic literals.
-   * Forbidden patterns include (but are not limited to): `== "SomeWord"`, `!= "OtherWord"`, `switch`/`case` on strings, lookup maps keyed by alphabetic words, or regex rules that match specific words.
-   * You may branch ONLY on generic structure: nullability, type, emptiness, length, presence/position of delimiters, or generic regex shape (not specific words).
+   * Do NOT branch on any specific literal value (alphabetic OR numeric).
+   * Forbidden patterns include (but are not limited to):
+     - `== "SomeWord"`, `!= "OtherWord"`, `switch`/`case` on strings/numbers
+     - lookup maps keyed by alphabetic words or specific numbers
+     - regex rules that match specific words/names
+     - value-to-value remapping like `personalNumber == '1002' ? '2' : personalNumber`
+   * You may branch ONLY on generic structure:
+     - nullability, type, emptiness/blankness
+     - length thresholds
+     - presence/count/position of delimiters
+     - generic regex SHAPES using character classes (e.g., digits-only, contains '@', contains '-', etc.)
+     - You may check equality only against the empty string `''` (emptiness check), never against any non-empty literal.
 7. No unseen literal insertion + minimal mutation + outlier handling (STRICT):
    * Do not introduce any alphabetic word literal (A–Z/a–z sequences) unless it is copied from input via substring/regex capture.
    * Allowed literals should be structural separators/punctuation only (e.g., " ", "-", "_", ".", "@", ",") when required by the examples.
    * If multiple transformations fit, choose the one with minimal mutation of input values.
-   * Do not generalize from a single odd example or apparent typo/anomaly; prefer the transform consistent across examples.
+   * Do not generalize from a single odd example or apparent typo/anomaly; prefer the transform consistent across most examples.
    * If the mapping is underdetermined or contradictory without guessing, output exactly `null`.
-8. The **last expression** must evaluate to the desired result.
-9. **Comments**: the script **must start with exactly one single-line Groovy comment** describing the transformation (e.g., `// Extract domain from email`). No other comments are allowed after that first line, and it MUST be identical to `description` prefixed with `// `.
+8. Noise / outlier policy (STRICT):
+   * Examples may contain occasional corrupted pairs (bugs/outliers). You must NOT implement special-case rules to satisfy such outliers.
+   * If satisfying an example would require either:
+     (a) substituting any alphabetic token in person-like identifiers (e.g., Alexander→Alex, John→Jack), OR
+     (b) mapping a specific identifier value to another specific identifier value (alphabetic OR numeric), e.g., 1002→2,
+     then treat that example as an outlier and ignore it when inferring the rule.
+   * Infer logic from the remaining examples. If the remaining examples are insufficient or contradictory → output exactly `null`.
+9. Sensitive identifiers (EXTRA STRICT):
+   * Applies to variables that look like sensitive IDs (e.g., personalNumber, employeeNumber, employeeId, personalId, nationalId, ssn-like, etc.).
+   * Never branch on or compare against a specific non-empty literal value (alphabetic OR numeric).
+   * Never implement value-to-value remapping (1002→2, ABC→XYZ).
+   * Allowed operations are generic formatting only:
+     - trim, remove/normalize separators
+     - keep digits (digits-only normalization) / strip non-digits
+     - substring/pad/truncate only by generic length rules inferred from most examples
+     - pass-through unchanged
+   * If only outlier examples suggest a remapping, ignore them; if nothing deterministic remains → `null`.
+10. The **last expression** must evaluate to the desired result.
+11. **Comments**: the script **must start with exactly one single-line Groovy comment** describing the transformation (e.g., `// Extract domain from email`). No other comments are allowed after that first line, and it MUST be identical to `description` prefixed with `// `.
 
 #### Output format (MANDATORY)
 Return **exactly one JSON object** with this shape (escape newlines as `\\n` inside the string):
