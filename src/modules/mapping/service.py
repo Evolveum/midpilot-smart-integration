@@ -3,6 +3,7 @@
 # Licensed under the EUPL-1.2 or later.
 
 import logging
+import re
 
 from langchain.schema.output_parser import OutputParserException
 from langchain_core.output_parsers import PydanticOutputParser
@@ -88,12 +89,21 @@ def build_prompt_data(req: SuggestMappingRequest) -> str:
             source_literal = f"[input: {to_groovy_literal(app_val)}]"
             target_literal = to_groovy_literal(mid_val)
         else:
-            source_literal = f"[{mid_attr.name}: {to_groovy_literal(mid_val)}]"
+            # WORKAROUND: stripping c: prefixes which confuses llm and would probably cause invalid groovy syntax
+            # FIXME: formalize this attribute name normalization (eiter in MP or MS)
+            mid_attr_name = mid_attr.name.split(":")[-1]
+            source_literal = f"[{mid_attr_name}: {to_groovy_literal(mid_val)}]"
             target_literal = to_groovy_literal(app_val)
 
         lines.append(f"{source_literal} -> {target_literal}")
 
     return "\n".join(lines)
+
+
+def is_null_script(script):
+    normalized = re.sub(r"//.*", "", script)
+    normalized = normalized.strip()
+    return not normalized or normalized == "null" or normalized == "return null"
 
 
 async def suggest_mapping_script(req: SuggestMappingRequest) -> SuggestMappingResponse:
@@ -139,6 +149,10 @@ async def suggest_mapping_script(req: SuggestMappingRequest) -> SuggestMappingRe
             },
             config={"callbacks": [langfuse_handler]},
         )
+        # WORKAROUND: llm is instructed to return null if not possible to generate script, but it oftens leaves comments or returns null
+        # FIXME: fix llm to follow `null` instruction or formalize e.g. using output parser
+        if is_null_script(resp.transformationScript):
+            resp.transformationScript = None
         return resp
 
     except OutputParserException as exc:

@@ -114,8 +114,8 @@ class SuggestMappingResponse(BaseModel):
         ...,
         description="One-line description of the transformation. MUST match the first-line comment (after '// ') in transformationScript.",
     )
-    transformationScript: str = Field(
-        ...,
+    transformationScript: Optional[str] = Field(
+        None,
         description="Groovy code starting with a single-line comment `// <description>` on the first line, followed by the code. The last expression must evaluate to the desired value.",
     )
 

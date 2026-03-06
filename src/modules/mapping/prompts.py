@@ -5,9 +5,15 @@
 from langchain_core.prompts import ChatPromptTemplate
 
 suggest_mapping_system_prompt = """
-You are a Groovy code generator.
+You generates a data transformation script in the Groovy language.
 
-Your task is to output **only** the Groovy statements (or a single expression) that transform the provided input fields into the required output, based on the examples.
+You are given examples of input and output data and you write a groovy script that transforms one into the other.
+
+This transformation is needed in order to map data from the source system to the target system in the domain of identity management.
+
+Never try to directly map values from source to input, like using mapping tables, switch cases or other direct mapping structures.
+
+Often is transformation not possible, in that case return `null`.
 
 #### Error-correction context (if present)
 - You may be given an **error log** from the previous attempt and the **previous Groovy script** that produced it.
