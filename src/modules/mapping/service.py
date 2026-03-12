@@ -12,7 +12,7 @@ from src.common.llm import get_default_llm, make_basic_chain
 
 from ...common.errors import LLMResponseValidationException
 from ...common.langfuse import langfuse_handler
-from ...utils import parse_value_by_type, to_groovy_literal
+from ...utils import normalize_attr_name_for_groovy, parse_value_by_type, to_groovy_literal
 from .prompts import suggest_mapping_prompt
 from .schema import BaseSchemaAttribute, SuggestMappingRequest, SuggestMappingResponse, ValueExample
 
@@ -89,9 +89,7 @@ def build_prompt_data(req: SuggestMappingRequest) -> str:
             source_literal = f"[input: {to_groovy_literal(app_val)}]"
             target_literal = to_groovy_literal(mid_val)
         else:
-            # WORKAROUND: stripping c: prefixes which confuses llm and would probably cause invalid groovy syntax
-            # FIXME: formalize this attribute name normalization (eiter in MP or MS)
-            mid_attr_name = mid_attr.name.split(":")[-1]
+            mid_attr_name = normalize_attr_name_for_groovy(mid_attr.name)
             source_literal = f"[{mid_attr_name}: {to_groovy_literal(mid_val)}]"
             target_literal = to_groovy_literal(app_val)
 

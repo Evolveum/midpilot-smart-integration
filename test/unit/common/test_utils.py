@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 
 import pytest
 
-from src.utils import parse_value_by_type, to_groovy_literal
+from src.utils import normalize_attr_name_for_groovy, parse_value_by_type, to_groovy_literal
 
 
 # ---- to_groovy_literal / parse_value_by_type focused tests ----
@@ -71,3 +71,29 @@ def test_parse_value_by_type_single_and_multivalued():
         parse_value_by_type(["notanint"], "xsd:int", multivalued=False)
     with pytest.raises(ValueError):
         parse_value_by_type(["2023-99-99"], "xsd:dateTime", multivalued=False)
+
+
+# ---- normalize_attr_name_for_groovy tests ----
+@pytest.mark.parametrize(
+    "raw_name, expected",
+    [
+        # Colon-separated (namespace prefix)
+        ("c:name", "name"),
+        ("c:givenName", "givenName"),
+        ("c:familyName", "familyName"),
+        ("c:extension/ext:personalNumber", "personalNumber"),
+        ("c:attributes/ri:username", "username"),
+        ("c:attributes/icfs:name", "name"),
+        ("ext:employeeNumber", "employeeNumber"),
+        # Slash-separated (path without namespace)
+        ("attributes/username", "username"),
+        ("extension/personalNumber", "personalNumber"),
+        ("activation/administrativeStatus", "administrativeStatus"),
+        # Simple names (no separator)
+        ("givenName", "givenName"),
+        ("personalNumber", "personalNumber"),
+        ("name", "name"),
+    ],
+)
+def test_normalize_attr_name_for_groovy(raw_name, expected):
+    assert normalize_attr_name_for_groovy(raw_name) == expected

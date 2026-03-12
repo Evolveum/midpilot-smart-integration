@@ -8,6 +8,39 @@ from typing import Any
 
 
 # ---- parsing / normalization utilities ----
+def normalize_attr_name_for_groovy(name: str) -> str:
+    """
+    Normalize a namespaced MidPoint attribute name into a valid Groovy identifier.
+
+    MidPoint attribute names often carry namespace prefixes (e.g. ``c:name``,
+    ``c:extension/ext:personalNumber``, ``c:attributes/ri:username``) which are
+    invalid as Groovy variable names because ``:`` is not a legal identifier
+    character. MidPoint resolves the same attributes without the prefix, so
+    stripping it is safe.
+
+    The rule: take the substring after the **last** ``:`` in the name. This
+    correctly handles all known patterns:
+
+    - ``c:name``                         → ``name``
+    - ``c:givenName``                    → ``givenName``
+    - ``c:extension/ext:personalNumber`` → ``personalNumber``
+    - ``c:attributes/ri:username``       → ``username``
+    - ``c:attributes/icfs:name``         → ``name``
+    - ``givenName`` (no prefix)          → ``givenName`` (unchanged)
+    - ``attributes/username`` (path)     → ``username``
+    - ``extension/personalNumber`` (path)→ ``personalNumber``
+
+    :param name: Raw attribute name as received from MidPoint.
+    :return: A valid Groovy identifier string.
+    """
+    if ":" in name:
+        return name.split(":")[-1]
+    elif "/" in name:
+        return name.split("/")[-1]
+    else:
+        return name
+
+
 def _parse_single_by_type(raw: str, type_str: str) -> Any:
     """
     Parse a single raw string into a Python object according to the given xsd type.
