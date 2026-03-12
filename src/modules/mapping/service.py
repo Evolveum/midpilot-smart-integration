@@ -99,6 +99,8 @@ def build_prompt_data(req: SuggestMappingRequest) -> str:
 
 
 def is_null_script(script):
+    if script is None:
+        return True
     normalized = re.sub(r"//.*", "", script)
     normalized = normalized.strip()
     return not normalized or normalized == "null" or normalized == "return null"
