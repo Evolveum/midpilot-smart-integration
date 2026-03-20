@@ -4,6 +4,7 @@
 
 from fastapi import APIRouter
 
+from .modules.categorical_mapping.router import router as categorical_mapping_router
 from .modules.complex_pairing.router import router as complex_pairing_router
 from .modules.correlation.router import router as correlation_router
 from .modules.extension_att.router import router as extension_router
@@ -21,6 +22,7 @@ Root API router that aggregates all sub-module routers under their respective pr
 # Include each endpoint router with a prefix and optional tags
 root_router.include_router(object_type_router, prefix="/objectType", tags=["objectType"])
 root_router.include_router(mapping_router, prefix="/mapping", tags=["mapping"])
+root_router.include_router(categorical_mapping_router, prefix="/mapping", tags=["mapping"])
 root_router.include_router(matching_router, prefix="/matching", tags=["matching"])
 root_router.include_router(focus_type_router, prefix="/focusType", tags=["focusType"])
 root_router.include_router(complex_pairing_router, prefix="/complexPairing", tags=["complexPairing"])
