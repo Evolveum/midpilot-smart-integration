@@ -4,7 +4,7 @@
 
 from typing import List
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from ...common.schema import BaseSchemaAttribute
 
@@ -27,21 +27,26 @@ class SuggestCategoricalMappingRequest(BaseModel):
     Maps to SiSuggestCategoricalMappingRequestType on the Java side.
     """
 
-    applicationAttribute: BaseSchemaAttribute = Field(
-        ..., description="Definition of the application-side attribute."
-    )
+    applicationAttribute: BaseSchemaAttribute = Field(..., description="Definition of the application-side attribute.")
     midPointAttribute: BaseSchemaAttribute = Field(
         ..., description="Definition of the midPoint-side categorical attribute."
     )
     inbound: bool = Field(..., description="Is the mapping to be produced an inbound one?")
-    applicationAttributeValueCount: List[AttributeValueCount] = Field(
+    applicationAttributeValue: List[str] = Field(
         default_factory=list,
-        description="Value distribution of the application attribute (value -> count).",
+        description="List of observed values of the application attribute.",
     )
     midPointCategoryValue: List[str] = Field(
         default_factory=list,
         description="Known enum values of the midPoint categorical attribute (e.g. 'enabled', 'disabled', 'archived').",
     )
+
+    @field_validator("inbound")
+    @classmethod
+    def validate_inbound(cls, v: bool) -> bool:
+        if not v:
+            raise ValueError("Outbound categorical mapping is not yet supported")
+        return v
 
 
 class SuggestCategoricalMappingResponse(BaseModel):

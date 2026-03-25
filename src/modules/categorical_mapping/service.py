@@ -20,15 +20,12 @@ def build_prompt_data(req: SuggestCategoricalMappingRequest) -> dict:
     """
     Build prompt variables for the categorical mapping prompt.
     """
-    distribution_lines = [
-        f"  {vc.value!r}: {vc.count}"
-        for vc in sorted(req.applicationAttributeValueCount, key=lambda x: x.count, reverse=True)
-    ]
+    app_enum_values = [f"  {v!r}" for v in req.applicationAttributeValue]
     return {
         "app_attr_name": req.applicationAttribute.name,
         "app_attr_type": req.applicationAttribute.type,
         "mp_attr_name": req.midPointAttribute.name,
-        "value_distribution": "\n".join(distribution_lines) if distribution_lines else "  (none)",
+        "app_enum_values": "\n".join(app_enum_values) if app_enum_values else "  (none)",
         "mp_enum_values": ", ".join(f'"{v}"' for v in req.midPointCategoryValue),
     }
 

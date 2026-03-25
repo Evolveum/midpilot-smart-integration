@@ -8,7 +8,7 @@ suggest_categorical_mapping_system_prompt = """
 You generate a Groovy value-mapping script for identity management.
 
 You are given:
-1. The VALUE DISTRIBUTION of an application attribute — a list of (value, count) pairs sorted by frequency.
+1. The OBSERVED VALUES of an application attribute — a list of distinct values.
 2. The KNOWN ENUM VALUES of a midPoint categorical attribute (e.g. activation/administrativeStatus). **These are the final, exact values — use them as-is without any transformations or safety checks.**
 
 Your task is to produce a Groovy script that maps each observed application value to the most semantically appropriate midPoint enum string value.
@@ -22,13 +22,23 @@ Your task is to produce a Groovy script that maps each observed application valu
 5. The default case (unrecognized value) must return `null` — return `null` if input is null or blank.
 6. Do not include any safety checks.
 7. The script must start with exactly one single-line Groovy comment describing the transformation (e.g. `// Map status values to activation/administrativeStatus`). No other comments are allowed. Do not use path prefixes (e.g. c:, ri:) in description.
+8. **If no meaningful mapping is possible** between the application values and midPoint enum values (e.g., the application values are completely unrelated to the midPoint enum semantics), return `null` for the `transformationScript` field.
 
 #### Output format (MANDATORY)
+{format_instructions}
+
 Return **exactly one JSON object** with this shape (escape newlines as `\\n` inside the string):
 
 {{
   "description": "One-line description",
   "transformationScript": "// <same-one-line-description>\\n<Groovy code>"
+}}
+
+**If no mapping is possible**, return:
+
+{{
+  "description": "No meaningful mapping possible",
+  "transformationScript": null
 }}
 
 **Do not** include Markdown/code fences, language tags, XML/HTML tags, extra keys, or surrounding text. The JSON must be syntactically valid.
@@ -38,8 +48,8 @@ suggest_categorical_mapping_human_prompt = """
 Application attribute: {app_attr_name} ({app_attr_type})
 MidPoint attribute: {mp_attr_name}
 
-Application value distribution (value -> count, sorted by frequency):
-{value_distribution}
+Observed application values:
+{app_enum_values}
 
 Known midPoint enum values:
 {mp_enum_values}
@@ -51,6 +61,5 @@ suggest_categorical_mapping_prompt: ChatPromptTemplate = ChatPromptTemplate.from
     [
         ("system", suggest_categorical_mapping_system_prompt),
         ("human", suggest_categorical_mapping_human_prompt),
-        ("human", "{format_instructions}"),
     ]
 )

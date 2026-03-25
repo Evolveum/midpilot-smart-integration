@@ -21,11 +21,7 @@ def test_suggest_categorical_mapping_endpoint_shape():
             "maxOccurs": 1,
         },
         "inbound": True,
-        "applicationAttributeValueCount": [
-            {"value": "active", "count": 100},
-            {"value": "inactive", "count": 45},
-            {"value": "deleted", "count": 5},
-        ],
+        "applicationAttributeValue": ["active", "inactive", "deleted"],
         "midPointCategoryValue": ["enabled", "disabled", "archived"],
     }
 
@@ -56,10 +52,7 @@ def test_suggest_categorical_mapping_endpoint_lockout():
             "maxOccurs": 1,
         },
         "inbound": True,
-        "applicationAttributeValueCount": [
-            {"value": "0", "count": 980},
-            {"value": "1", "count": 20},
-        ],
+        "applicationAttributeValue": ["0", "1"],
         "midPointCategoryValue": ["normal", "locked"],
     }
 
@@ -81,7 +74,7 @@ def test_suggest_categorical_mapping_endpoint_empty_counts():
             "maxOccurs": 1,
         },
         "inbound": True,
-        "applicationAttributeValueCount": [],
+        "applicationAttributeValue": [],
         "midPointCategoryValue": ["enabled", "disabled", "archived"],
     }
 
@@ -93,6 +86,29 @@ def test_suggest_categorical_mapping_endpoint_empty_counts():
     assert "transformationScript" in data
 
 
+def test_suggest_categorical_mapping_endpoint_no_meaningful_mapping():
+    payload = {
+        "applicationAttribute": {"name": "ri:departmentCode", "type": "xsd:string", "minOccurs": 0, "maxOccurs": 1},
+        "midPointAttribute": {
+            "name": "c:activation/c:administrativeStatus",
+            "type": "xsd:string",
+            "minOccurs": 0,
+            "maxOccurs": 1,
+        },
+        "inbound": True,
+        "applicationAttributeValue": ["DEPT-001", "DEPT-002", "DEPT-003"],
+        "midPointCategoryValue": ["enabled", "disabled", "archived"],
+    }
+
+    resp = client.post(f"{base_url}/mapping/suggestCategoricalMapping", json=payload)
+    assert resp.status_code == 200
+
+    data = resp.json()
+    assert "description" in data
+    assert "transformationScript" in data
+    assert data["transformationScript"] is None
+
+
 def test_suggest_categorical_mapping_endpoint_missing_required_fields():
     payload = {
         "inbound": True,
@@ -101,3 +117,26 @@ def test_suggest_categorical_mapping_endpoint_missing_required_fields():
 
     resp = client.post(f"{base_url}/mapping/suggestCategoricalMapping", json=payload)
     assert resp.status_code == 422
+
+
+def test_suggest_categorical_mapping_endpoint_outbound_not_supported():
+    payload = {
+        "applicationAttribute": {"name": "ri:status", "type": "xsd:string", "minOccurs": 0, "maxOccurs": 1},
+        "midPointAttribute": {
+            "name": "c:activation/c:administrativeStatus",
+            "type": "xsd:string",
+            "minOccurs": 0,
+            "maxOccurs": 1,
+        },
+        "inbound": False,
+        "applicationAttributeValue": ["active", "inactive"],
+        "midPointCategoryValue": ["enabled", "disabled", "archived"],
+    }
+
+    resp = client.post(f"{base_url}/mapping/suggestCategoricalMapping", json=payload)
+    assert resp.status_code == 422
+
+    data = resp.json()
+    assert "detail" in data
+    assert any("inbound" in str(error.get("loc", [])) for error in data["detail"])
+    assert any("not yet supported" in error.get("msg", "").lower() for error in data["detail"])
