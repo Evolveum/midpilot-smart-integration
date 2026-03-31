@@ -99,7 +99,7 @@ class SuggestMappingRequest(BaseModel):
                     },
                 ],
                 "errorLog": "Optional: Backend validation error log from previous attempt.",
-                "previousScript": "// Uppercase input\n(input instanceof String ? input.toUpperCase() : null)",
+                "previousScript": "// Uppercase input\n(input?.toUpperCase())",
             }
         }
     }
@@ -123,7 +123,7 @@ class SuggestMappingResponse(BaseModel):
         json_schema_extra={
             "example": {
                 "description": "Uppercase input",
-                "transformationScript": "// Uppercase input\n(input instanceof String ? input.toUpperCase() : null)",
+                "transformationScript": "// Uppercase input\n(input?.toUpperCase())",
             }
         }
     )
