@@ -3,11 +3,35 @@
 # Licensed under the EUPL-1.2 or later.
 
 from enum import Enum
-from typing import List, Optional
+from typing import List, Literal, Optional
 
 from pydantic import BaseModel, Field
 
 from src.modules.utils import clean_description
+
+
+class ModelOptions(BaseModel):
+    """
+    Optional per-request overrides for the LLM configuration.
+    """
+
+    # TODO:
+    # - for now (testing phase) is model name unrestricted
+    # - we might consider model whitelist and an endpoint listing supported models
+    modelName: Optional[str] = Field(None, description="Override the default LLM model name.")
+    reasoningEffort: Optional[Literal["low", "medium", "high"]] = Field(
+        None, description="Override the reasoning effort level."
+    )
+
+
+class BaseRequest(BaseModel):
+    """
+    Base class for all module request schemas.
+    """
+
+    modelOptions: Optional[ModelOptions] = Field(
+        None, description="Optional model configuration overrides for the request."
+    )
 
 
 class BaseSchemaAttribute(BaseModel):

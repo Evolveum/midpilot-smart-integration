@@ -6,6 +6,8 @@ from typing import List
 
 from pydantic import BaseModel, Field
 
+from ...common.schema import BaseRequest
+
 # -------------------------
 # Common types
 # -------------------------
@@ -37,7 +39,7 @@ class Pair(BaseModel):
     application: List[Record] = Field(..., description="List of Application records (single or multiple).")
 
 
-class ComplexPairingRequest(BaseModel):
+class ComplexPairingRequest(BaseRequest):
     """Request payload for complex pairing matching across N aligned samples (pairs)."""
 
     pairs: List[Pair] = Field(

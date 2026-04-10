@@ -6,6 +6,7 @@ from unittest.mock import patch
 
 import pytest
 
+from src.common.schema import ModelOptions
 from src.modules.mapping.schema import (
     IOExample,
     MappingSchemaAttribute,
@@ -282,3 +283,21 @@ async def test_suggest_mapping_script_previous_without_errorlog(monkeypatch):
         description="Normalize email",
         transformationScript="// Normalize email\n(email instanceof String ? email.trim().toLowerCase() : null)",
     )
+
+
+@pytest.mark.asyncio
+@patch("src.modules.mapping.service.get_default_llm")
+async def test_model_options_forwarded_to_llm(mock_get_default_llm):
+    mock_get_default_llm.return_value = response_mock(
+        '{"description":"x","transformationScript":"// x\\nx"}'
+    ).return_value
+    model_options = ModelOptions(modelName="custom-model", reasoningEffort="low")
+    req = SuggestMappingRequest(
+        applicationAttribute=[MappingSchemaAttribute(name="src", type="xsd:string", minOccurs=1, maxOccurs=1)],
+        midPointAttribute=[MappingSchemaAttribute(name="dst", type="xsd:string", minOccurs=0, maxOccurs=1)],
+        inbound=True,
+        example=[IOExample()],
+        modelOptions=model_options,
+    )
+    await suggest_mapping_script(req)
+    mock_get_default_llm.assert_called_once_with(model_options=model_options)

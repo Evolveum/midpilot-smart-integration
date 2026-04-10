@@ -2,6 +2,9 @@
 #
 # Licensed under the EUPL-1.2 or later.
 
+import logging
+from typing import Optional
+
 from langchain.output_parsers import RetryWithErrorOutputParser
 from langchain.prompts import BasePromptTemplate
 from langchain_core.output_parsers import BaseOutputParser
@@ -9,22 +12,39 @@ from langchain_core.runnables import Runnable, RunnableLambda, RunnableParallel
 from langchain_openai import ChatOpenAI
 
 from ..config import config
+from .schema import ModelOptions
+
+logger = logging.getLogger(__name__)
 
 
-def get_default_llm(temperature: float = 1.0) -> ChatOpenAI:
+def get_default_llm(temperature: float = 1.0, model_options: Optional[ModelOptions] = None) -> ChatOpenAI:
     """
     Create and return a ChatOpenAI LLM instance with default parameters.
 
     :param temperature: Sampling temperature for the LLM (controls randomness).
+    :param model_options: Optional per-request overrides for model name and reasoning effort.
     :return: Configured ChatOpenAI instance.
     """
+    model_name = config.llm.model_name
+    reasoning_effort = config.llm.reasoning_effort
+
+    if model_options:
+        if model_options.modelName:
+            model_name = model_options.modelName
+        if model_options.reasoningEffort:
+            reasoning_effort = model_options.reasoningEffort
+
+    logger.debug(
+        f"[LLM Request] Model Name: {model_name}, Reasoning Effort: {reasoning_effort}, Temperature: {temperature}"
+    )
+
     return ChatOpenAI(
         openai_api_key=config.llm.openai_api_key,
         openai_api_base=config.llm.openai_api_base,
-        model_name=config.llm.model_name,
+        model_name=model_name,
         request_timeout=config.llm.request_timeout,
         temperature=temperature,
-        reasoning_effort="high",
+        reasoning_effort=reasoning_effort,
         extra_body=config.llm.extra_body,
     )
 

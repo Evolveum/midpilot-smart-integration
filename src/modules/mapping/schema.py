@@ -7,7 +7,7 @@ from typing import List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from ...common.schema import BaseSchemaAttribute
+from ...common.schema import BaseRequest, BaseSchemaAttribute
 
 
 # Allowed simple xsd types for clarity / validation
@@ -53,7 +53,7 @@ class IOExample(BaseModel):
     )
 
 
-class SuggestMappingRequest(BaseModel):
+class SuggestMappingRequest(BaseRequest):
     """
     One mapping job: attributes list and a handful of I/O examples.
     """

@@ -67,7 +67,7 @@ async def suggest_extension_correlators(
     prompt_vars = _build_prompt_inputs(req)
 
     # 2) Build the chain
-    llm = get_default_llm()
+    llm = get_default_llm(model_options=req.modelOptions)
     chain = make_basic_chain(prompt, llm, parser)
 
     # 3) Invoke the chain and parse

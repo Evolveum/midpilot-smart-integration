@@ -39,7 +39,7 @@ async def suggest_categorical_mapping_script(
     """
     prompt_vars = build_prompt_data(req)
 
-    llm = get_default_llm()
+    llm = get_default_llm(model_options=req.modelOptions)
     parser: PydanticOutputParser = PydanticOutputParser(pydantic_object=SuggestCategoricalMappingResponse)
     chain = make_basic_chain(suggest_categorical_mapping_prompt, llm, parser)
 

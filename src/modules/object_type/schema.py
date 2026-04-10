@@ -7,7 +7,7 @@ from typing import List, Optional, Tuple
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from src.common.schema import ApplicationSchema
+from src.common.schema import ApplicationSchema, BaseRequest
 
 
 class PatternTypeEnum(str, Enum):
@@ -104,7 +104,7 @@ class Statistics(BaseModel):
     timestamp: Optional[str] = Field(None, description="ISO timestamp when statistics were computed.")
 
 
-class SuggestObjectTypeRequest(BaseModel):
+class SuggestObjectTypeRequest(BaseRequest):
     """
     Request payload for suggesting object types based on schema and statistics.
     Optionally includes structured validationErrorFeedback from backend to guide a corrective retry.

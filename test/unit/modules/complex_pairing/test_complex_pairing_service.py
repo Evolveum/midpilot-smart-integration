@@ -7,6 +7,7 @@ from unittest.mock import patch
 
 import pytest
 
+from src.common.schema import ModelOptions
 from src.modules.complex_pairing import service as svc
 from src.modules.complex_pairing.schema import AttributeValue, ComplexPairingRequest, Pair, Record
 from test.unit.modules.utils import response_mock
@@ -120,3 +121,29 @@ async def test_complex_pairing_parses_llm_output():
     assert resp.mappings and len(resp.mappings) == 2
     assert resp.mappings[0].midPointIdentifier == "1"
     assert resp.mappings[0].applicationIdentifier == "A1"
+
+
+@pytest.mark.asyncio
+@patch("src.modules.complex_pairing.service.get_default_llm")
+async def test_model_options_forwarded_to_llm(mock_get_default_llm):
+    mock_get_default_llm.return_value = response_mock(
+        json.dumps(
+            {
+                "similar": True,
+                "rationale": "match",
+                "mappings": [{"midPointIdentifier": "1", "applicationIdentifier": "A1"}],
+            }
+        )
+    ).return_value
+    model_options = ModelOptions(modelName="custom-model", reasoningEffort="low")
+    req = ComplexPairingRequest(
+        pairs=[
+            Pair(
+                midPoint=[Record(identifier="1", content=[AttributeValue(attribute="c:email", value=["a@b.com"])])],
+                application=[Record(identifier="A1", content=[AttributeValue(attribute="email", value=["a@b.com"])])],
+            )
+        ],
+        modelOptions=model_options,
+    )
+    await svc.complex_pairing(req)
+    mock_get_default_llm.assert_called_once_with(model_options=model_options)

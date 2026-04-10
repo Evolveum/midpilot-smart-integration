@@ -6,7 +6,7 @@ from typing import List
 
 from pydantic import BaseModel, Field, field_validator
 
-from ...common.schema import BaseSchemaAttribute
+from ...common.schema import BaseRequest, BaseSchemaAttribute
 
 
 class AttributeValueCount(BaseModel):
@@ -19,7 +19,7 @@ class AttributeValueCount(BaseModel):
     count: int = Field(..., description="Number of occurrences of this value.")
 
 
-class SuggestCategoricalMappingRequest(BaseModel):
+class SuggestCategoricalMappingRequest(BaseRequest):
     """
     Request to suggest a categorical (enum-to-enum) inbound mapping script.
     Used when no correlated data pairs are available but the source attribute

@@ -6,7 +6,7 @@ from typing import Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
-from ...common.schema import BaseSchemaAttribute
+from ...common.schema import BaseRequest, BaseSchemaAttribute
 
 
 class BasicAttributeStats(BaseModel):
@@ -31,7 +31,7 @@ class BasicAttributeStats(BaseModel):
     )
 
 
-class SuggestExtensionCorrelatorsRequest(BaseModel):
+class SuggestExtensionCorrelatorsRequest(BaseRequest):
     """
     Input for suggesting correlation attributes from midPoint extension attributes.
     Provide midPoint schema context and the list of extension attributes.

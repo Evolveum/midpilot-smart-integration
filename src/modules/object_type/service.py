@@ -84,7 +84,7 @@ async def suggest_delineation(req: SuggestObjectTypeRequest) -> SuggestObjectTyp
             feedback_context = ""
 
     # 3) Invoke LLM chain
-    llm = get_default_llm()
+    llm = get_default_llm(model_options=req.modelOptions)
     chain = make_basic_chain(prompt, llm, parser)
 
     try:

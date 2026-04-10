@@ -8,6 +8,7 @@ from unittest.mock import patch
 import pytest
 
 from src.common.errors import LLMResponseValidationException
+from src.common.schema import ModelOptions
 from src.modules.correlation.schema import (
     BasicAttributeStats,
     SuggestExtensionCorrelatorsRequest,
@@ -87,3 +88,13 @@ async def test_allows_empty_list():
 async def test_invalid_json_raises():
     with pytest.raises(LLMResponseValidationException):
         await suggest_extension_correlators(_req)
+
+
+@pytest.mark.asyncio
+@patch("src.modules.correlation.service.get_default_llm")
+async def test_model_options_forwarded_to_llm(mock_get_default_llm):
+    mock_get_default_llm.return_value = response_mock('{"correlators":[]}').return_value
+    model_options = ModelOptions(modelName="custom-model", reasoningEffort="low")
+    req = _req.model_copy(update={"modelOptions": model_options})
+    await suggest_extension_correlators(req)
+    mock_get_default_llm.assert_called_once_with(model_options=model_options)

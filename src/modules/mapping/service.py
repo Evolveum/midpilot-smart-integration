@@ -114,7 +114,7 @@ async def suggest_mapping_script(req: SuggestMappingRequest) -> SuggestMappingRe
     # Build examples
     data_samples: str = build_prompt_data(req)
 
-    llm = get_default_llm()
+    llm = get_default_llm(model_options=req.modelOptions)
     parser: PydanticOutputParser = PydanticOutputParser(pydantic_object=SuggestMappingResponse)
     chain = make_basic_chain(suggest_mapping_prompt, llm, parser)
 

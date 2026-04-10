@@ -8,7 +8,7 @@ from unittest.mock import patch
 import pytest
 
 from src.common.errors import LLMResponseValidationException
-from src.common.schema import ApplicationSchema, BaseSchemaAttribute
+from src.common.schema import ApplicationSchema, BaseSchemaAttribute, ModelOptions
 from src.modules.extension_att.schema import (
     SuggestExtensionRequest,
     SuggestExtensionResponse,
@@ -132,3 +132,14 @@ async def test_suggest_extension_parser_error():
 
     with pytest.raises(LLMResponseValidationException):
         await suggest_extension(req)
+
+
+@pytest.mark.asyncio
+@patch("src.modules.extension_att.service.get_default_llm")
+async def test_model_options_forwarded_to_llm(mock_get_default_llm):
+    mock_get_default_llm.return_value = response_mock('{"extensionAttributes":[]}').return_value
+    model_options = ModelOptions(modelName="custom-model", reasoningEffort="low")
+    req = _make_req([BaseSchemaAttribute(name="c:attributes/ri:uid", type="xsd:string", minOccurs=0, maxOccurs=1)])
+    req = req.model_copy(update={"modelOptions": model_options})
+    await suggest_extension(req)
+    mock_get_default_llm.assert_called_once_with(model_options=model_options)

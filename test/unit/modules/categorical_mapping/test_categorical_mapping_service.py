@@ -6,7 +6,7 @@ from unittest.mock import patch
 
 import pytest
 
-from src.common.schema import BaseSchemaAttribute
+from src.common.schema import BaseSchemaAttribute, ModelOptions
 from src.modules.categorical_mapping.schema import (
     SuggestCategoricalMappingRequest,
     SuggestCategoricalMappingResponse,
@@ -118,3 +118,22 @@ async def test_suggest_categorical_mapping_script_smoke(monkeypatch):
     assert isinstance(resp, SuggestCategoricalMappingResponse)
     assert resp.description == "Map status to administrativeStatus"
     assert resp.transformationScript is not None
+
+
+@pytest.mark.asyncio
+@patch("src.modules.categorical_mapping.service.get_default_llm")
+async def test_model_options_forwarded_to_llm(mock_get_default_llm):
+    mock_get_default_llm.return_value = response_mock(
+        '{"description":"x","transformationScript":"// x\\nx"}'
+    ).return_value
+    model_options = ModelOptions(modelName="custom-model", reasoningEffort="low")
+    req = SuggestCategoricalMappingRequest(
+        applicationAttribute=APP_ATTR,
+        midPointAttribute=MP_ATTR,
+        inbound=True,
+        applicationAttributeValue=["active"],
+        midPointCategoryValue=["enabled"],
+        modelOptions=model_options,
+    )
+    await suggest_categorical_mapping_script(req)
+    mock_get_default_llm.assert_called_once_with(model_options=model_options)
