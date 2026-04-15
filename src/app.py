@@ -19,7 +19,7 @@ def create_api() -> FastAPI:
 
     :return: Configured FastAPI instance.
     """
-    app = FastAPI(title=config.app.title, version=get_version_info())
+    app = FastAPI(title=config.app.title, version=get_version_info(), root_path=config.app.root_path)
     app.include_router(root_router, prefix=config.app.api_base_url)
 
     @app.exception_handler(ServiceUnavailableException)
