@@ -1,0 +1,38 @@
+# Copyright (c) 2010-2026 Evolveum and contributors
+#
+# Licensed under the EUPL-1.2 or later.
+
+import logging
+from typing import List
+
+from langchain_core.messages import HumanMessage
+
+from ...common.llm import get_default_llm
+from ...common.schema import ModelOptions
+from .schema import HealthResponse, HealthStatus
+
+logger = logging.getLogger(__name__)
+
+
+async def run_health_checks() -> HealthResponse:
+    """
+    Run all health checks and return the aggregated result.
+
+    :return: HealthResponse with overall status and per-check results.
+    """
+    from .schema import CheckResult, HealthResponse
+
+    checks: List[CheckResult] = []
+
+    checks.append(CheckResult(name="server", status=HealthStatus.OK))
+
+    try:
+        llm = get_default_llm(model_options=ModelOptions(reasoningEffort="low"))
+        await llm.ainvoke([HumanMessage(content="Say hello")])
+        checks.append(CheckResult(name="llm", status=HealthStatus.OK))
+    except Exception as e:
+        logger.error("LLM health check failed: %s", e, exc_info=True)
+        checks.append(CheckResult(name="llm", status=HealthStatus.ERROR, error=str(e)))
+
+    overall = HealthStatus.OK if all(c.status == HealthStatus.OK for c in checks) else HealthStatus.ERROR
+    return HealthResponse(status=overall, checks=checks)

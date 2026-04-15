@@ -1,4 +1,4 @@
-# Copyright (c) 2010-2025 Evolveum and contributors
+# Copyright (c) 2010-2026 Evolveum and contributors
 #
 # Licensed under the EUPL-1.2 or later.
 
@@ -6,6 +6,8 @@ import pytest
 from fastapi.testclient import TestClient
 
 from src.app import api
+from src.config import config
+from src.modules.health.schema import HealthStatus
 
 
 @pytest.fixture(scope="module")
@@ -21,4 +23,21 @@ def client() -> TestClient:
 def test_health_endpoint(client: TestClient) -> None:
     response = client.get("/health")
     assert response.status_code == 200
-    assert response.json() == {"message": "OK"}
+    data = response.json()
+    assert data["status"] == HealthStatus.OK
+    checks_by_name = {c["name"]: c for c in data["checks"]}
+    assert checks_by_name["server"]["status"] == HealthStatus.OK
+    assert checks_by_name["llm"]["status"] == HealthStatus.OK
+
+
+def test_health_endpoint_llm_failure(client: TestClient, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(config.llm, "openai_api_key", "")
+
+    response = client.get("/health")
+    assert response.status_code == 503
+    data = response.json()
+    assert data["status"] == HealthStatus.ERROR
+    checks_by_name = {c["name"]: c for c in data["checks"]}
+    assert checks_by_name["server"]["status"] == HealthStatus.OK
+    assert checks_by_name["llm"]["status"] == HealthStatus.ERROR
+    assert "error" in checks_by_name["llm"]

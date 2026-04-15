@@ -2,7 +2,18 @@
 #
 # Licensed under the EUPL-1.2 or later.
 
+from typing import Any
+
 from fastapi import HTTPException
+
+
+class ServiceUnavailableException(HTTPException):
+    """
+    Exception raised when the service or one of its dependencies is unavailable.
+    """
+
+    def __init__(self, detail: Any = "Service Unavailable"):
+        super().__init__(status_code=503, detail=detail)
 
 
 class LLMResponseValidationException(HTTPException):

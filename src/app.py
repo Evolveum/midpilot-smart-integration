@@ -2,9 +2,13 @@
 #
 # Licensed under the EUPL-1.2 or later.
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 
+from .common.errors import ServiceUnavailableException
 from .config import config
+from .modules.health.schema import HealthResponse, HealthStatus
+from .modules.health.service import run_health_checks
 from .router import root_router
 
 
@@ -19,12 +23,20 @@ def create_api() -> FastAPI:
     app = FastAPI(title=config.app.title, version=f"0.1.0{commit_info}")
     app.include_router(root_router, prefix=config.app.api_base_url)
 
+    @app.exception_handler(ServiceUnavailableException)
+    async def service_unavailable_handler(request: Request, exc: ServiceUnavailableException) -> JSONResponse:
+        return JSONResponse(content=exc.detail, status_code=exc.status_code)
+
     @app.get("/health")
-    async def health() -> dict:
+    async def health() -> HealthResponse:
         """
-        Health check endpoint to verify the service is running.
+        Health check endpoint.
+        Responds with "Service Unavailable" when unhealthy.
         """
-        return {"message": "OK"}
+        result = await run_health_checks()
+        if result.status != HealthStatus.OK:
+            raise ServiceUnavailableException(result.model_dump())
+        return result
 
     return app
 
