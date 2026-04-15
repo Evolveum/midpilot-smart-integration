@@ -9,6 +9,7 @@ from langchain_core.messages import HumanMessage
 
 from ...common.llm import get_default_llm
 from ...common.schema import ModelOptions
+from ...utils import get_version_info
 from .schema import HealthResponse, HealthStatus
 
 logger = logging.getLogger(__name__)
@@ -35,4 +36,4 @@ async def run_health_checks() -> HealthResponse:
         checks.append(CheckResult(name="llm", status=HealthStatus.ERROR, error=str(e)))
 
     overall = HealthStatus.OK if all(c.status == HealthStatus.OK for c in checks) else HealthStatus.ERROR
-    return HealthResponse(status=overall, checks=checks)
+    return HealthResponse(status=overall, version=get_version_info(), checks=checks)

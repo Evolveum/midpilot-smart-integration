@@ -2,11 +2,15 @@
 #
 # Licensed under the EUPL-1.2 or later.
 
+import importlib.metadata
 from enum import Enum
 from typing import Any, Dict, Optional
 
 from pydantic import BaseModel, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+# read version from pyproject.toml
+pyproject_version = importlib.metadata.version("midpilot-smart-integration")
 
 
 class LogLevel(str, Enum):
@@ -111,7 +115,7 @@ class AppSettings(BaseModel):
     """
 
     title: str = "Smart Integration Microservice"
-    version: str = "0.1.0"
+    version: str = pyproject_version
     git_commit: str = ""
     description: str = "Smart Integration Microservice for schema matching and mapping"
     api_base_url: str = "/api/v1"

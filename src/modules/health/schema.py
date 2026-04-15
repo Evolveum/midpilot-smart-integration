@@ -21,4 +21,5 @@ class CheckResult(BaseModel):
 
 class HealthResponse(BaseModel):
     status: HealthStatus
+    version: str
     checks: List[CheckResult]

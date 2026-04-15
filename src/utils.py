@@ -6,6 +6,8 @@ import json
 from datetime import datetime
 from typing import Any
 
+from .config import config
+
 
 # ---- parsing / normalization utilities ----
 def normalize_attr_name_for_groovy(name: str) -> str:
@@ -163,3 +165,13 @@ def pretty_json(value: Any) -> str:
     """
 
     return json.dumps(value, ensure_ascii=False, indent=2)
+
+
+def get_version_info():
+    """
+    Returns version name including git commit if available.
+    """
+    git_commit = config.app.git_commit
+    version = config.app.version
+    commit_info = f" ({git_commit})" if git_commit else ""
+    return f"{version}{commit_info}"

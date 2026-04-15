@@ -3,7 +3,7 @@
 # Licensed under the EUPL-1.2 or later.
 
 [project]
-name = "smart-integration-ms"
+name = "midpilot-smart-integration"
 version = "0.1.0"
 description = "Smart Integration Microservice for schema matching, mapping, delineation and correlation."
 readme = "README.md"

@@ -10,6 +10,7 @@ from .config import config
 from .modules.health.schema import HealthResponse, HealthStatus
 from .modules.health.service import run_health_checks
 from .router import root_router
+from .utils import get_version_info
 
 
 def create_api() -> FastAPI:
@@ -18,9 +19,7 @@ def create_api() -> FastAPI:
 
     :return: Configured FastAPI instance.
     """
-    git_commit = config.app.git_commit
-    commit_info = f" ({git_commit})" if git_commit else ""
-    app = FastAPI(title=config.app.title, version=f"0.1.0{commit_info}")
+    app = FastAPI(title=config.app.title, version=get_version_info())
     app.include_router(root_router, prefix=config.app.api_base_url)
 
     @app.exception_handler(ServiceUnavailableException)
