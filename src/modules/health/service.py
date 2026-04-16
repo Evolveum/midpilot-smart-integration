@@ -10,7 +10,7 @@ from langchain_core.messages import HumanMessage
 from ...common.llm import get_default_llm
 from ...common.schema import ModelOptions
 from ...utils import get_version_info
-from .schema import HealthResponse, HealthStatus
+from .schema import CheckResult, HealthResponse, HealthStatus
 
 logger = logging.getLogger(__name__)
 
@@ -21,8 +21,6 @@ async def run_health_checks() -> HealthResponse:
 
     :return: HealthResponse with overall status and per-check results.
     """
-    from .schema import CheckResult, HealthResponse
-
     checks: List[CheckResult] = []
 
     checks.append(CheckResult(name="server", status=HealthStatus.OK))
