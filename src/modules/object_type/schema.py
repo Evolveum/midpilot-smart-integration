@@ -10,6 +10,16 @@ from pydantic import BaseModel, ConfigDict, Field
 from src.common.schema import ApplicationSchema, BaseRequest
 
 
+class RegenerateMode(str, Enum):
+    """
+    Describes why the user is requesting regeneration of object type suggestions.
+    Mirrors RegenerateMode enum from the Java backend.
+    """
+
+    NEW_DATA_SPLIT = "NEW_DATA_SPLIT"
+    NEW_FILTER = "NEW_FILTER"
+
+
 class PatternTypeEnum(str, Enum):
     """
     Enum representing different types of string pattern matching strategies.
@@ -198,6 +208,14 @@ class SuggestObjectTypeRequest(BaseRequest):
         default=None,
         alias="validationErrorFeedback",
         description="Optional structured feedback entries for previously suggested object types; each includes the problematic suggestion and human-readable filter error messages.",
+    )
+    regenerateMode: Optional[RegenerateMode] = Field(
+        default=None,
+        description="Describes why the user is regenerating; absent for an initial suggestion run.",
+    )
+    previousDelineation: Optional[List["ObjectTypeSuggestion"]] = Field(
+        default=None,
+        description="Previously suggested delineations; provided for NEW_DATA_SPLIT and NEW_FILTER modes to guide a different result.",
     )
 
 

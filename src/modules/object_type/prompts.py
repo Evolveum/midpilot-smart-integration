@@ -5,7 +5,7 @@
 from typing import List, Optional
 
 from langchain_core.output_parsers import PydanticOutputParser
-from langchain_core.prompts import PromptTemplate
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from pydantic import BaseModel, Field
 
 
@@ -64,7 +64,7 @@ class Delineation(BaseModel):
 
 parser: PydanticOutputParser[Delineation] = PydanticOutputParser(pydantic_object=Delineation)
 
-template = """
+SYSTEM_TEMPLATE = """
 You are given schema and statistical characteristics of the dataset representing a single object class.
 Your task is to find patterns in the data that are subject to so-called delineation - the data is devided into smaller subsets that logically (and according the rules below) belongs together.
 Next you will generate filters to query each subset in midPoint Query Language (MQL).
@@ -214,24 +214,21 @@ Assume prioritized predicates `PRIMARY_i` (MQL expressions for each priority):
   or a mix. When mixing, you may use both `baseContextFilter` (to scope to a DN subtree) and `filter` (to refine further) in the same rule.
 - If branches don’t sum to full coverage, include a final catch-all rule.
 
---------------------
+"""
+
+HUMAN_TEMPLATE = """
 ## JSON statistics for this object class:
 ```json
 {stats_json}
 ```
---------------------
+"""
 
-
-{feedback_context}
-
-
-#### Format instruction:
---------------------
-{format_instructions}
-""".strip()
-
-prompt = PromptTemplate(
-    template=template,
-    input_variables=["stats_json", "feedback_context"],
-    partial_variables={"format_instructions": parser.get_format_instructions()},
-)
+prompt = ChatPromptTemplate.from_messages(
+    [
+        ("system", SYSTEM_TEMPLATE),
+        ("human", HUMAN_TEMPLATE),
+        MessagesPlaceholder("regen_messages", optional=True),
+        MessagesPlaceholder("feedback_messages", optional=True),
+        ("human", "{format_instructions}"),
+    ]
+).partial(format_instructions=parser.get_format_instructions())

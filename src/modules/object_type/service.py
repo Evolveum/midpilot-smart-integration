@@ -6,6 +6,7 @@ import logging
 from typing import Iterable, List, Optional
 
 from langchain.schema.output_parser import OutputParserException
+from langchain_core.messages import AIMessage, BaseMessage, HumanMessage
 
 from src.common.llm import get_default_llm, make_basic_chain
 from src.utils import pretty_json
@@ -15,6 +16,7 @@ from ...common.langfuse import langfuse_handler
 from .prompts import parser, prompt
 from .schema import (
     ObjectTypeSuggestion,
+    RegenerateMode,
     SuggestObjectTypeRequest,
     SuggestObjectTypeResponse,
 )
@@ -26,13 +28,13 @@ Service module for suggesting object types (kind, intent and delineation rules) 
 """
 
 
-def build_feedback_context_json(validation_errors) -> str:
+def build_feedback_messages(validation_errors) -> List[BaseMessage]:
     """
-    Build a clean JSON code block for the prompt from backend validation errors.
-    If there are no errors, return empty string -> prompt will not contain this section.
+    Build a HumanMessage with a JSON code block from backend validation errors.
+    Returns an empty list if there are no errors.
     """
     if not validation_errors:
-        return ""
+        return []
 
     items = []
     for e in validation_errors or []:
@@ -60,8 +62,63 @@ def build_feedback_context_json(validation_errors) -> str:
         }
     }
 
-    # tu vyrobíme už celý code block
-    return "```json\n" + pretty_json(payload) + "\n```"
+    return [HumanMessage(content="\n```json\n" + pretty_json(payload) + "\n```")]
+
+
+def build_regeneration_messages(
+    regenerate_mode: RegenerateMode,
+    previous_delineations: Optional[List[ObjectTypeSuggestion]],
+) -> List[BaseMessage]:
+    """
+    Build a pair of chat messages describing why the user is regenerating and what was
+    previously suggested: an AIMessage with the previous delineation JSON (simulating the
+    prior model response) and a HumanMessage with the correction instruction.
+    Returns an empty list if there are no previous delineations.
+    """
+    if not previous_delineations:
+        return []
+
+    items = []
+    for d in previous_delineations:
+        entry: dict = {"kind": d.kind, "intent": d.intent}
+        if d.filter:
+            entry["filter"] = d.filter
+        if d.baseContextFilter:
+            entry["baseContextFilter"] = d.baseContextFilter
+        items.append(entry)
+    prev_json = "```json\n" + pretty_json({"previousDelineation": items}) + "\n```"
+
+    if regenerate_mode == RegenerateMode.NEW_DATA_SPLIT:
+        return [
+            AIMessage(content=prev_json),
+            HumanMessage(
+                content=(
+                    "\n## Regeneration Request: New Data Split\n"
+                    "The current partitioning is incorrect — the suggested delineation rules do not correctly split the data.\n"
+                    "Generate a **completely different** set of delineation rules using a different partitioning strategy. "
+                    "Do NOT replicate the same split logic as the previous suggestions above."
+                )
+            ),
+        ]
+
+    if regenerate_mode == RegenerateMode.NEW_FILTER:
+        return [
+            AIMessage(content=prev_json),
+            HumanMessage(
+                content=(
+                    "\n## MANDATORY FILTER REPLACEMENT\n"
+                    "The `(kind, intent)` labels above are correct, but every filter expression must be replaced.\n\n"
+                    "**Rules you MUST follow:**\n"
+                    "1. Keep exactly the same `kind` and `intent` values as shown above.\n"
+                    "2. Treat all `filter` and `baseContextFilter` values above as **invalid** — do not copy either of them.\n"
+                    "   This includes both MQL filter expressions and any base context (DN) filters.\n"
+                    "3. Derive completely new MQL filter expressions by re-analysing the statistics from scratch.\n"
+                    "4. If no better filter can be found for a rule, use `filter: null` rather than repeating the old one."
+                )
+            ),
+        ]
+
+    return []
 
 
 async def suggest_delineation(req: SuggestObjectTypeRequest) -> SuggestObjectTypeResponse:
@@ -74,16 +131,17 @@ async def suggest_delineation(req: SuggestObjectTypeRequest) -> SuggestObjectTyp
     # 1) Build prompt payload and JSON
     stats_json = pretty_json(build_object_type_prompt_data(req))
 
-    # 2) Build feedback JSON (or empty string)
-    feedback_context = ""
-    if getattr(req, "validationErrorFeedback", None):
-        try:
-            feedback_context = build_feedback_context_json(req.validationErrorFeedback)
-        except Exception:
-            # be defensive; do not block the flow on feedback formatting
-            feedback_context = ""
+    # 2) Build feedback messages (or empty list)
+    feedback_messages: List[BaseMessage] = []
+    if req.validationErrorFeedback:
+        feedback_messages = build_feedback_messages(req.validationErrorFeedback)
 
-    # 3) Invoke LLM chain
+    # 3) Build regeneration messages (or empty list)
+    regen_messages: List[BaseMessage] = []
+    if req.regenerateMode is not None:
+        regen_messages = build_regeneration_messages(req.regenerateMode, req.previousDelineation)
+
+    # 4) Invoke LLM chain
     llm = get_default_llm(model_options=req.modelOptions)
     chain = make_basic_chain(prompt, llm, parser)
 
@@ -91,7 +149,8 @@ async def suggest_delineation(req: SuggestObjectTypeRequest) -> SuggestObjectTyp
         delineation = await chain.ainvoke(
             {
                 "stats_json": stats_json,
-                "feedback_context": feedback_context,
+                "regen_messages": regen_messages,
+                "feedback_messages": feedback_messages,
             },
             config={"callbacks": [langfuse_handler]},
         )
