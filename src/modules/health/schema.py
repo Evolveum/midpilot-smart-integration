@@ -11,6 +11,7 @@ from pydantic import BaseModel, Field
 class HealthStatus(str, Enum):
     OK = "OK"
     ERROR = "ERROR"
+    DISABLED = "DISABLED"
 
 
 class CheckResult(BaseModel):

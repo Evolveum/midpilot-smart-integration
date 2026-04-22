@@ -28,6 +28,7 @@ def test_health_endpoint(client: TestClient) -> None:
     checks_by_name = {c["name"]: c for c in data["checks"]}
     assert checks_by_name["server"]["status"] == HealthStatus.OK
     assert checks_by_name["llm"]["status"] == HealthStatus.OK
+    assert checks_by_name["langfuse"]["status"] == HealthStatus.DISABLED
 
 
 def test_health_endpoint_llm_failure(client: TestClient, monkeypatch: pytest.MonkeyPatch) -> None:
