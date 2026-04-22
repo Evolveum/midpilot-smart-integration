@@ -9,5 +9,7 @@ services:
     build: .
     ports:
       - "${HOST_PORT:-8090}:${CONTAINER_PORT:-8090}"
+    env_file:
+      - .env
     environment:
       LOGGING__LEVEL: info
