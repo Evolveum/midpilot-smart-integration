@@ -168,3 +168,55 @@ def test_suggest_object_type_with_dn_attribute():
         assert "intent" in suggestion
         assert "displayName" in suggestion
         assert "description" in suggestion
+
+
+def test_suggest_object_type_new_filter_regen():
+    payload = {
+        "schema": {
+            "name": "ri:group",
+            "description": "Contains group entries",
+            "attribute": [
+                {"name": "c:attributes/ri:objectClass", "type": "xsd:string", "minOccurs": 0, "maxOccurs": 1},
+                {"name": "c:attributes/ri:groupType", "type": "xsd:double", "minOccurs": 0, "maxOccurs": 1},
+            ],
+        },
+        "statistics": {
+            "attribute": [
+                {
+                    "ref": "c:attributes/ri:groupType",
+                    "uniqueValueCount": 4,
+                    "missingValueCount": 0,
+                    "valueCount": [
+                        {"value": "-2147483646.0", "count": 1395},
+                        {"value": "8.0", "count": 238},
+                    ],
+                    "valuePatternCount": [],
+                },
+            ],
+            "attributeTuple": [],
+            "size": 1633,
+            "coverage": 1.0,
+        },
+        "regenerateMode": "NEW_FILTER",
+        "previousDelineation": [
+            {
+                "kind": "entitlement",
+                "intent": "security",
+                "displayName": "Security Entitlement",
+                "description": "Previous suggestion",
+                "filter": ["c:attributes/ri:groupType = -2147483646.0"],
+                "baseContextFilter": None,
+            }
+        ],
+    }
+
+    with patch("src.modules.object_type.service.get_default_llm", response_mock(_SIMPLE_RULE_JSON)):
+        resp = client.post(f"{base_url}/objectType/suggestObjectType", json=payload)
+    assert resp.status_code == 200
+    data = resp.json()
+    assert "objectType" in data and isinstance(data["objectType"], list)
+    for suggestion in data["objectType"]:
+        assert "kind" in suggestion
+        assert "intent" in suggestion
+        assert "displayName" in suggestion
+        assert "description" in suggestion
