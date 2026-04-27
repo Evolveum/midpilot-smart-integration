@@ -152,6 +152,7 @@ async def suggest_mapping_script(req: SuggestMappingRequest) -> SuggestMappingRe
         # WORKAROUND: llm is instructed to return null if not possible to generate script, but it oftens leaves comments or returns null
         # FIXME: fix llm to follow `null` instruction or formalize e.g. using output parser
         if is_null_script(resp.transformationScript):
+            resp.description = None
             resp.transformationScript = None
         return resp
 

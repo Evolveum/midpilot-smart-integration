@@ -286,6 +286,27 @@ async def test_suggest_mapping_script_previous_without_errorlog(monkeypatch):
 
 
 @pytest.mark.asyncio
+@patch(
+    "src.modules.mapping.service.get_default_llm",
+    response_mock('{"description":null,"transformationScript":null}'),
+)
+async def test_suggest_mapping_script_allows_abstain_response(monkeypatch):
+    req = SuggestMappingRequest(
+        applicationAttribute=[MappingSchemaAttribute(name="device", type="xsd:string", minOccurs=1, maxOccurs=1)],
+        midPointAttribute=[MappingSchemaAttribute(name="costCenter", type="xsd:string", minOccurs=0, maxOccurs=1)],
+        inbound=True,
+        example=[
+            IOExample(
+                application=[ValueExample(name="device", value=["laptop"])],
+                midPoint=[ValueExample(name="costCenter", value=["1000"])],
+            )
+        ],
+    )
+    resp = await suggest_mapping_script(req)
+    assert resp == SuggestMappingResponse(description=None, transformationScript=None)
+
+
+@pytest.mark.asyncio
 @patch("src.modules.mapping.service.get_default_llm")
 async def test_model_options_forwarded_to_llm(mock_get_default_llm):
     mock_get_default_llm.return_value = response_mock(
