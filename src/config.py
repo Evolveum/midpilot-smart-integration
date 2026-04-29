@@ -56,6 +56,7 @@ class LLMSettings(BaseModel):
     :param model_name: Default model identifier to use.
     :param request_timeout: Timeout for API requests in seconds.
     :param extra_body: Extra body used for provider-specific requests.
+    :param ca_cert_file: Optional CA certificate file for internal TLS.
     """
 
     openai_api_key: str = ""
@@ -69,6 +70,7 @@ class LLMSettings(BaseModel):
             "provider": {"order": ["groq", "parasail", "deepinfra"]},
         }
     )
+    ca_cert_file: Optional[str] = None
 
 
 class LangfuseSettings(BaseModel):

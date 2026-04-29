@@ -1,10 +1,10 @@
 # Copyright (c) 2010-2025 Evolveum and contributors
 #
 # Licensed under the EUPL-1.2 or later.
-
 import logging
 from typing import Optional
 
+import httpx
 from langchain.output_parsers import RetryWithErrorOutputParser
 from langchain.prompts import BasePromptTemplate
 from langchain_core.output_parsers import BaseOutputParser
@@ -38,6 +38,7 @@ def get_default_llm(temperature: float = 1.0, model_options: Optional[ModelOptio
         f"[LLM Request] Model Name: {model_name}, Reasoning Effort: {reasoning_effort}, Temperature: {temperature}"
     )
 
+    http_client = httpx.AsyncClient(verify=config.llm.ca_cert_file or True)
     return ChatOpenAI(
         openai_api_key=config.llm.openai_api_key,
         openai_api_base=config.llm.openai_api_base,
@@ -46,6 +47,7 @@ def get_default_llm(temperature: float = 1.0, model_options: Optional[ModelOptio
         temperature=temperature,
         reasoning_effort=reasoning_effort,
         extra_body=config.llm.extra_body,
+        http_async_client=http_client,
     )
 
 
