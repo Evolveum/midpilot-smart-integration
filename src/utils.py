@@ -10,13 +10,13 @@ from .config import config
 
 
 # ---- parsing / normalization utilities ----
-def normalize_attr_name_for_groovy(name: str) -> str:
+def normalize_attr_name_for_mel(name: str) -> str:
     """
-    Normalize a namespaced MidPoint attribute name into a valid Groovy identifier.
+    Normalize a namespaced MidPoint attribute name into a valid MEL identifier.
 
     MidPoint attribute names often carry namespace prefixes (e.g. ``c:name``,
     ``c:extension/ext:personalNumber``, ``c:attributes/ri:username``) which are
-    invalid as Groovy variable names because ``:`` is not a legal identifier
+    invalid as MEL variable names because ``:`` is not a legal identifier
     character. MidPoint resolves the same attributes without the prefix, so
     stripping it is safe.
 
@@ -33,7 +33,7 @@ def normalize_attr_name_for_groovy(name: str) -> str:
     - ``extension/personalNumber`` (path)→ ``personalNumber``
 
     :param name: Raw attribute name as received from MidPoint.
-    :return: A valid Groovy identifier string.
+    :return: A valid MEL identifier string.
     """
     if ":" in name:
         return name.split(":")[-1]
@@ -43,59 +43,75 @@ def normalize_attr_name_for_groovy(name: str) -> str:
         return name
 
 
-def _parse_single_by_type(raw: str, type_str: str) -> Any:
+def _quote_single_by_type(raw: str, type_str: str) -> str:
     """
-    Parse a single raw string into a Python object according to the given xsd type.
+    Transform a single raw string into an appropriate string representation according to the given xsd type.
+
+    - If the type_str parameter tells that the intended type of the raw value is a string, it wraps it with additional
+      (escaped) quotes (e.g. "hello" -> "\"hello\"").
+    - In case of other intended types, the raw value is returned as it is.
+
+    The function also validates the raw value according to the specified xsd type by trying to parse it to its Python
+    counterpart.
 
     :param raw: The raw string representation of the value.
     :param type_str: The XSD type string (e.g., "xsd:int", "xsd:datetime").
-    :return: The parsed Python value.
+    :return: The potentially quoted string.
     :raises ValueError: If the value is invalid for the given type, or the type is unsupported.
     """
     v = raw.strip()
     t = type_str.strip().lower()
 
     if t == "xsd:boolean":
-        if v.lower() == "true":
-            return True
-        if v.lower() == "false":
-            return False
+        val = v.lower()
+        if val == "true" or val == "false":
+            return val
         raise ValueError(f"Expected 'true' or 'false' for boolean, got {raw!r}")
 
     if t == "xsd:string":
-        return v
+        return f"\"{v}\""
 
     if t in ("xsd:int", "xsd:long"):
         try:
-            return int(v)
+            int(v) # Check if it's a valid integer.
+            return v
         except ValueError:
             raise ValueError(f"Invalid integer {raw!r} for type {type_str}")
 
     if t in ("xsd:double", "xsd:float"):
         try:
-            return float(v)
+            float(v) # Check if it's a valid float
+            return v
         except ValueError:
             raise ValueError(f"Invalid float {raw!r} for type {type_str}")
 
     if t == "xsd:datetime":
         try:
-            return datetime.fromisoformat(v)
+            datetime.fromisoformat(v) # Check if it's a valid datetime in iso format
+            return v
         except Exception as e:
             raise ValueError(f"Invalid datetime {raw!r}: {e}") from e
 
     raise ValueError(f"Unsupported XSD type: {type_str!r}")
 
 
-def parse_value_by_type(raw: Any, type_str: str, multivalued: bool = False) -> Any:
+def quote_by_type(raw: Any, type_str: str, multivalued: bool = False) -> Any:
     """
-    Convert input (expected to be a list, possibly empty) into Python value(s) based on the xsd type.
+    Quote input (expected to be a list, possibly empty) based on the xsd type.
+
+    - If the type_str parameter tells that the intended type of the processed value is a string, it wraps it with
+      additional (escaped) quotes (e.g. "hello" -> "\"hello\"").
+    - In case of other intended types, the raw value is returned as it is.
 
     Empty list normalizes to None (if not multivalued) or [] (if multivalued).
+
+    If multivalued, but with only one element, unwrapped element is returned.
 
     :param raw: The incoming raw value; expected to be a list or None.
     :param type_str: The XSD type string (e.g., "xsd:string", "xsd:int").
     :param multivalued: Whether the target schema allows multiple values.
-    :return: Parsed value: single scalar (if not multivalued), list (if multivalued), or None for empties.
+    :return: Parsed value: single scalar (if not multivalued or multivalued with single item), list (if multivalued),
+    or None for empties.
     """
     if raw is None:
         return [] if multivalued else None
@@ -111,51 +127,17 @@ def parse_value_by_type(raw: Any, type_str: str, multivalued: bool = False) -> A
         if item is None:
             parsed_list.append(None)
         else:
-            parsed_list.append(_parse_single_by_type(str(item), type_str))
+            parsed_list.append(_quote_single_by_type(str(item), type_str))
 
     if multivalued:
+        if len(parsed_list) == 1:
+            return parsed_list[0]
         return parsed_list
     if len(parsed_list) == 1:
         return parsed_list[0]
     raise ValueError(
         f"Expected single non-multivalued value for type {type_str}, got list of length {len(parsed_list)}"
     )
-
-
-def to_groovy_literal(value: Any) -> str:
-    """
-    Serialize a Python value into a valid Groovy literal.
-    Strings are emitted as double-quoted literals (JSON-escaped).
-
-    Supported types: datetime, str, bool, None, int, float, list, dict.
-    """
-
-    if isinstance(value, datetime):
-        # ISO 8601; Date.parse uses Java SimpleDateFormat.
-        return f"Date.parse(\"yyyy-MM-dd'T'HH:mm:ssX\", {json.dumps(value.isoformat())})"
-
-    if isinstance(value, str):
-        return json.dumps(value)
-
-    if value is None or isinstance(value, (bool, int, float)):
-        return json.dumps(value)
-
-    if isinstance(value, list):
-        inner = ", ".join(to_groovy_literal(v) for v in value)
-        return f"[{inner}]"
-
-    if isinstance(value, dict):
-        pairs = []
-        for k, v in value.items():
-            if isinstance(k, str):
-                key_literal = json.dumps(k)
-            else:
-                key_literal = f"({to_groovy_literal(k)})"
-            pairs.append(f"{key_literal}: {to_groovy_literal(v)}")
-        return f"[{', '.join(pairs)}]"
-
-    return json.dumps(str(value))
-
 
 def pretty_json(value: Any) -> str:
     """

@@ -34,7 +34,7 @@ async def suggest_categorical_mapping_script(
     req: SuggestCategoricalMappingRequest,
 ) -> SuggestCategoricalMappingResponse:
     """
-    Suggest a Groovy value-mapping script for a categorical attribute.
+    Suggest a MEL value-mapping expression for a categorical attribute.
     Uses value distribution and known midPoint enum values instead of data pairs.
     """
     prompt_vars = build_prompt_data(req)

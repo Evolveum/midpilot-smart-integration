@@ -12,7 +12,7 @@ router = ObservableAPIRouter()
 @router.post("/suggestCategoricalMapping", response_model=SuggestCategoricalMappingResponse)
 async def suggest_categorical_mapping_script(req: SuggestCategoricalMappingRequest):
     """
-    Suggest a Groovy value-mapping script for a categorical (enum-valued) attribute.
+    Suggest a MEL value-mapping expression for a categorical (enum-valued) attribute.
     Uses value distribution and known midPoint enum values instead of data pairs.
     """
     return await service.suggest_categorical_mapping_script(req)

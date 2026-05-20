@@ -74,7 +74,7 @@ class SuggestMappingRequest(BaseRequest):
     previousScript: Optional[str] = Field(
         default=None,
         alias="previousScript",
-        description="Optional: Groovy transformation script from the previous attempt that produced the errorLog.",
+        description="Optional: MEL transformation expression from the previous attempt that produced the errorLog.",
     )
 
     model_config = {
@@ -107,7 +107,7 @@ class SuggestMappingRequest(BaseRequest):
 
 class SuggestMappingResponse(BaseModel):
     """
-    The inferred Groovy code snippet that transforms applicationValue into midpointValue.
+    The inferred MEL code snippet that transforms applicationValue into midpointValue.
     """
 
     description: Optional[str] = Field(
@@ -116,7 +116,7 @@ class SuggestMappingResponse(BaseModel):
     )
     transformationScript: Optional[str] = Field(
         None,
-        description="Groovy code starting with a single-line comment `// <description>` on the first line, followed by the code. The last expression must evaluate to the desired value.",
+        description="MEL code starting with a single-line comment `// <description>` on the first line, followed by the code. The last expression must evaluate to the desired value.",
     )
 
     model_config = ConfigDict(

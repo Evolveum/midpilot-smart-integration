@@ -51,7 +51,7 @@ class SuggestCategoricalMappingRequest(BaseRequest):
 
 class SuggestCategoricalMappingResponse(BaseModel):
     """
-    The inferred Groovy code snippet that maps application categorical values to midPoint enum values.
+    The inferred MEL code snippet that maps application categorical values to midPoint enum values.
     Shares the same shape as SuggestMappingResponse / SiSuggestMappingResponseType.
     """
 
@@ -61,5 +61,5 @@ class SuggestCategoricalMappingResponse(BaseModel):
     )
     transformationScript: str | None = Field(
         None,
-        description="Groovy code starting with a single-line comment `// <description>` on the first line, followed by the mapping logic.",
+        description="MEL code starting with a single-line comment `// <description>` on the first line, followed by the mapping logic.",
     )
