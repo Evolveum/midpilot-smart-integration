@@ -12,7 +12,7 @@ from src.common.llm import get_default_llm, make_basic_chain
 
 from ...common.errors import LLMResponseValidationException
 from ...common.langfuse import langfuse_handler
-from ...utils import normalize_attr_name_for_groovy, parse_value_by_type, to_groovy_literal
+from ...utils import normalize_attr_name_for_mel, quote_by_type
 from .prompts import suggest_mapping_prompt
 from .schema import BaseSchemaAttribute, SuggestMappingRequest, SuggestMappingResponse, ValueExample
 
@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 def build_prompt_data(req: SuggestMappingRequest) -> str:
     """
-    Build a newline-separated string of Groovy mapping literals to use as few-shot examples.
+    Build a newline-separated string of mapping literals to use as few-shot examples.
 
     Scope: single-attribute mappings only (exactly one application attribute and one midPoint attribute).
 
@@ -42,13 +42,13 @@ def build_prompt_data(req: SuggestMappingRequest) -> str:
                   - `midPointAttribute`: list with exactly one `BaseSchemaAttribute` (target attribute in midPoint)
                   - `inbound`: `True` for inbound (application → midPoint), `False` for outbound (midPoint → application)
                   - `example`: list of `IOExample` with `application` and/or `midPoint` `ValueExample` entries
-    :return: A string where each line is a Groovy mapping literal: "<left> -> <right>".
+    :return: A string where each line is a mapping literal: "<left> -> <right>".
 
     Notes:
       - Multi-value attributes are handled according to `maxOccurs` (True if > 1 or -1).
       - Empty lists are serialized as `null`.
       - For single-valued attributes, a parsed list is unwrapped to its first element.
-      - Values are parsed via `parse_value_by_type(...)` and serialized with `to_groovy_literal(...)`.
+      - Values are parsed via `parse_value_by_type(...)`.
     """
 
     if len(req.applicationAttribute) != 1 or len(req.midPointAttribute) != 1:
@@ -68,7 +68,7 @@ def build_prompt_data(req: SuggestMappingRequest) -> str:
     def extract_and_emit(raw_examples: list[ValueExample] | None, attr: BaseSchemaAttribute, multi: bool):
         # pull out the raw string values (or [] if missing/empty)
         raw = next((ve.value for ve in (raw_examples or []) if ve.name == attr.name), [])
-        val = parse_value_by_type(raw, attr.type, multivalued=multi)
+        val = quote_by_type(raw, attr.type, multivalued=multi)
 
         # empty-list → null
         if isinstance(val, list) and not val:
@@ -86,12 +86,12 @@ def build_prompt_data(req: SuggestMappingRequest) -> str:
         mid_val = extract_and_emit(ex.midPoint, mid_attr, mid_multi)
 
         if inbound:
-            source_literal = f"[input: {to_groovy_literal(app_val)}]"
-            target_literal = to_groovy_literal(mid_val)
+            source_literal = f"[input: {app_val}]"
+            target_literal = mid_val
         else:
-            mid_attr_name = normalize_attr_name_for_groovy(mid_attr.name)
-            source_literal = f"[{mid_attr_name}: {to_groovy_literal(mid_val)}]"
-            target_literal = to_groovy_literal(app_val)
+            mid_attr_name = normalize_attr_name_for_mel(mid_attr.name)
+            source_literal = f"[{mid_attr_name}: {mid_val}]"
+            target_literal = app_val
 
         lines.append(f"{source_literal} -> {target_literal}")
 
@@ -108,7 +108,7 @@ def is_null_script(script):
 
 async def suggest_mapping_script(req: SuggestMappingRequest) -> SuggestMappingResponse:
     """
-    Suggest a Groovy transformation script for mapping input→midpoint values.
+    Suggest a MEL transformation expression for mapping input→midpoint values.
     Returns a Pydantic SuggestMappingResponse parsed by PydanticOutputParser.
     """
     # Build examples
@@ -134,8 +134,8 @@ async def suggest_mapping_script(req: SuggestMappingRequest) -> SuggestMappingRe
         prev_script_text = str(req.previousScript).strip()
         if prev_script_text:
             context_parts.append(
-                "PREVIOUS GROOVY SCRIPT (this produced the error above; analyze and fix or rewrite as needed):\n\n"
-                "```groovy\n" + prev_script_text + "\n```"
+                "PREVIOUS MEL EXPRESSION (this produced the error above; analyze and fix or rewrite as needed):\n\n"
+                "```mel\n" + prev_script_text + "\n```"
             )
 
     error_context = "\n\n".join(context_parts).strip()

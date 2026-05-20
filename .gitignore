@@ -29,7 +29,7 @@ htmlcov/
 !.env.demo-example
 
 # FIXME: not sure why is this directory being created, has something to do with [build-system]
-smart_integration_ms.egg-info
+midpilot_smart_integration.egg-info
 
 # macOS specific files
 .DS_Store

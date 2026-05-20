@@ -25,9 +25,25 @@ def test_suggest_mapping_endpoint_shape():
                 "application": [{"name": "firstName", "value": ["Jane"]}],
                 "midPoint": [{"name": "given_name", "value": ["JANE"]}],
             },
+            {
+                "application": [{"name": "firstName", "value": ["Henry"]}],
+                "midPoint": [{"name": "given_name", "value": ["HENRY"]}],
+            },
+            {
+                "application": [{"name": "firstName", "value": []}],
+                "midPoint": [{"name": "given_name", "value": [""]}],
+            },
+            {
+                "application": [{"name": "firstName", "value": ["Kate"]}],
+                "midPoint": [{"name": "given_name", "value": ["ETAK"]}],
+            },
         ],
-        "errorLog": "Simulated backend validation error for mapping endpoint test",
-        "previousScript": "// Uppercase given name\ninput.firstName?.toUpperCase()",
+        "errorLog": "Unexpected error during validation of script in (new) Mapping expression evaluation: ERROR: ("
+                    "new) Mapping expression evaluation:1:12: mismatched input '<EOF>' expecting {'==', '!=', 'in', "
+                    "'<', '<=', '>=', '>', '&&', '||', '[', '.', '-', ':', '+', '*', '/', '%%'} \n"
+                    "| input?.uc() \n"
+                    "| ...........^.",
+        "previousScript": "// Uppercase given name\ninput?.uc()",
     }
 
     resp = client.post(f"{base_url}/mapping/suggestMapping", json=payload)
@@ -41,6 +57,7 @@ def test_suggest_mapping_endpoint_shape():
     assert "transformationScript" in data
     assert isinstance(data["transformationScript"], str)
     script = data["transformationScript"]
+    print(script)
     assert script.strip() != ""
 
     first_line = script.splitlines()[0]
