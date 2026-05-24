@@ -80,7 +80,8 @@ Ensure every rule is valid MQL using the midPoint data model and follows all quo
   - Therefore use only attributes it's values that are expected to be stable and constant over time (e.g., identifiers, technical types, DN/OU scope, technical prefixes/suffixes, ...).
   - Avoid using attributes and it's values that are likely to change (e.g., manager/supervisor references, volatile org metadata, ...).
 - DO NOT use personal data such as names, surnames, addresses, phone numbers, emails, locations, or descriptions as filter criteria.
-- Any rule based on such personal information is INVALID.
+- If these attributes contain fragments of non-personal infomration suitable for delineation, e.g. email domains, country codes or similar, that is an exception and you can use it.
+- Other than that any rule based on such personal information is INVALID.
 - It is valid that sometimes there is only **one rule** for the whole object class:
   - In that case, the rule may have no `filter` or `baseContextFilter`.
   - Such a rule still needs unique `(kind, intent)` labels.
