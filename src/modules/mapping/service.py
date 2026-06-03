@@ -38,8 +38,8 @@ def build_prompt_data(req: SuggestMappingRequest) -> str:
 
     :param req: Suggestion request.
                 Expected shape:
-                  - `applicationAttribute`: list with exactly one `BaseSchemaAttribute` (source attribute in the application)
-                  - `midPointAttribute`: list with exactly one `BaseSchemaAttribute` (target attribute in midPoint)
+                  - `applicationAttribute`: `BaseSchemaAttribute` (source attribute in the application)
+                  - `midPointAttribute`: `BaseSchemaAttribute` (target attribute in midPoint)
                   - `inbound`: `True` for inbound (application → midPoint), `False` for outbound (midPoint → application)
                   - `example`: list of `IOExample` with `application` and/or `midPoint` `ValueExample` entries
     :return: A string where each line is a mapping literal: "<left> -> <right>".
@@ -51,11 +51,8 @@ def build_prompt_data(req: SuggestMappingRequest) -> str:
       - Values are parsed via `parse_value_by_type(...)`.
     """
 
-    if len(req.applicationAttribute) != 1 or len(req.midPointAttribute) != 1:
-        raise ValueError("Only single-attribute mappings are supported.")
-
-    app_attr = req.applicationAttribute[0]
-    mid_attr = req.midPointAttribute[0]
+    app_attr = req.applicationAttribute
+    mid_attr = req.midPointAttribute
     inbound = req.inbound
 
     def is_multi(attr: BaseSchemaAttribute) -> bool:

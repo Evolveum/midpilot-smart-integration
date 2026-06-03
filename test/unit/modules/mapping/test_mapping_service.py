@@ -21,8 +21,8 @@ from test.unit.modules.utils import response_mock
 
 def test_build_prompt_data_single_presence_to_bool():
     req = SuggestMappingRequest(
-        applicationAttribute=[MappingSchemaAttribute(name="manager", type="xsd:string", minOccurs=1, maxOccurs=1)],
-        midPointAttribute=[MappingSchemaAttribute(name="hasManager", type="xsd:boolean", minOccurs=0, maxOccurs=1)],
+        applicationAttribute=MappingSchemaAttribute(name="manager", type="xsd:string", minOccurs=1, maxOccurs=1),
+        midPointAttribute=MappingSchemaAttribute(name="hasManager", type="xsd:boolean", minOccurs=0, maxOccurs=1),
         inbound=True,
         example=[
             IOExample(
@@ -42,8 +42,8 @@ def test_build_prompt_data_single_presence_to_bool():
 def test_build_prompt_data_missing_midpoint_or_application():
     # missing midPoint entirely → target null
     req1 = SuggestMappingRequest(
-        applicationAttribute=[MappingSchemaAttribute(name="attr", type="xsd:string", minOccurs=1, maxOccurs=1)],
-        midPointAttribute=[MappingSchemaAttribute(name="out", type="xsd:string", minOccurs=0, maxOccurs=1)],
+        applicationAttribute=MappingSchemaAttribute(name="attr", type="xsd:string", minOccurs=1, maxOccurs=1),
+        midPointAttribute=MappingSchemaAttribute(name="out", type="xsd:string", minOccurs=0, maxOccurs=1),
         inbound=True,
         example=[
             IOExample(
@@ -55,8 +55,8 @@ def test_build_prompt_data_missing_midpoint_or_application():
 
     # missing application entirely → source null
     req2 = SuggestMappingRequest(
-        applicationAttribute=[MappingSchemaAttribute(name="attr", type="xsd:string", minOccurs=1, maxOccurs=1)],
-        midPointAttribute=[MappingSchemaAttribute(name="out", type="xsd:string", minOccurs=0, maxOccurs=1)],
+        applicationAttribute=MappingSchemaAttribute(name="attr", type="xsd:string", minOccurs=1, maxOccurs=1),
+        midPointAttribute=MappingSchemaAttribute(name="out", type="xsd:string", minOccurs=0, maxOccurs=1),
         inbound=True,
         example=[IOExample(midPoint=[ValueExample(name="out", value=["TARGET"])])],
     )
@@ -65,8 +65,8 @@ def test_build_prompt_data_missing_midpoint_or_application():
 
 def test_build_prompt_data_all_empty_examples():
     req = SuggestMappingRequest(
-        applicationAttribute=[MappingSchemaAttribute(name="firstName", type="xsd:string", minOccurs=1, maxOccurs=1)],
-        midPointAttribute=[MappingSchemaAttribute(name="givenName", type="xsd:string", minOccurs=0, maxOccurs=1)],
+        applicationAttribute=MappingSchemaAttribute(name="firstName", type="xsd:string", minOccurs=1, maxOccurs=1),
+        midPointAttribute=MappingSchemaAttribute(name="givenName", type="xsd:string", minOccurs=0, maxOccurs=1),
         inbound=True,
         example=[IOExample(), IOExample(), IOExample()],
     )
@@ -76,8 +76,8 @@ def test_build_prompt_data_all_empty_examples():
 
 def test_build_prompt_data_inbound_simple():
     req = SuggestMappingRequest(
-        applicationAttribute=[MappingSchemaAttribute(name="firstName", type="xsd:string", minOccurs=1, maxOccurs=1)],
-        midPointAttribute=[MappingSchemaAttribute(name="givenName", type="xsd:string", minOccurs=0, maxOccurs=1)],
+        applicationAttribute=MappingSchemaAttribute(name="firstName", type="xsd:string", minOccurs=1, maxOccurs=1),
+        midPointAttribute=MappingSchemaAttribute(name="givenName", type="xsd:string", minOccurs=0, maxOccurs=1),
         inbound=True,
         example=[
             IOExample(
@@ -96,8 +96,8 @@ def test_build_prompt_data_inbound_simple():
 
 def test_build_prompt_data_outbound_simple():
     req = SuggestMappingRequest(
-        applicationAttribute=[MappingSchemaAttribute(name="firstName", type="xsd:string", minOccurs=1, maxOccurs=1)],
-        midPointAttribute=[MappingSchemaAttribute(name="givenName", type="xsd:string", minOccurs=0, maxOccurs=1)],
+        applicationAttribute=MappingSchemaAttribute(name="firstName", type="xsd:string", minOccurs=1, maxOccurs=1),
+        midPointAttribute=MappingSchemaAttribute(name="givenName", type="xsd:string", minOccurs=0, maxOccurs=1),
         inbound=False,
         example=[
             IOExample(
@@ -112,8 +112,8 @@ def test_build_prompt_data_outbound_simple():
 
 def test_build_prompt_data_boolean_mapping():
     req = SuggestMappingRequest(
-        applicationAttribute=[MappingSchemaAttribute(name="flag", type="xsd:boolean", minOccurs=1, maxOccurs=1)],
-        midPointAttribute=[MappingSchemaAttribute(name="otherFlag", type="xsd:boolean", minOccurs=0, maxOccurs=1)],
+        applicationAttribute=MappingSchemaAttribute(name="flag", type="xsd:boolean", minOccurs=1, maxOccurs=1),
+        midPointAttribute=MappingSchemaAttribute(name="otherFlag", type="xsd:boolean", minOccurs=0, maxOccurs=1),
         inbound=True,
         example=[
             IOExample(
@@ -127,8 +127,8 @@ def test_build_prompt_data_boolean_mapping():
 
 def test_build_prompt_data_multivalued_to_single_valued():
     req = SuggestMappingRequest(
-        applicationAttribute=[MappingSchemaAttribute(name="nums", type="xsd:int", minOccurs=1, maxOccurs=-1)],
-        midPointAttribute=[MappingSchemaAttribute(name="out", type="xsd:string", minOccurs=0, maxOccurs=1)],
+        applicationAttribute=MappingSchemaAttribute(name="nums", type="xsd:int", minOccurs=1, maxOccurs=-1),
+        midPointAttribute=MappingSchemaAttribute(name="out", type="xsd:string", minOccurs=0, maxOccurs=1),
         inbound=False,
         example=[
             IOExample(
@@ -144,8 +144,8 @@ def test_build_prompt_data_multivalued_to_single_valued():
 def test_build_prompt_data_single_to_multivalued():
     # application single, midpoint multivalued (outbound)
     req = SuggestMappingRequest(
-        applicationAttribute=[MappingSchemaAttribute(name="tag", type="xsd:string", minOccurs=1, maxOccurs=1)],
-        midPointAttribute=[MappingSchemaAttribute(name="labels", type="xsd:string", minOccurs=0, maxOccurs=-1)],
+        applicationAttribute=MappingSchemaAttribute(name="tag", type="xsd:string", minOccurs=1, maxOccurs=1),
+        midPointAttribute=MappingSchemaAttribute(name="labels", type="xsd:string", minOccurs=0, maxOccurs=-1),
         inbound=False,
         example=[
             IOExample(
@@ -160,8 +160,8 @@ def test_build_prompt_data_single_to_multivalued():
 def test_build_prompt_data_multivalued_to_multivalued():
     # both sides multivalued (outbound)
     req = SuggestMappingRequest(
-        applicationAttribute=[MappingSchemaAttribute(name="nums", type="xsd:int", minOccurs=1, maxOccurs=-1)],
-        midPointAttribute=[MappingSchemaAttribute(name="outs", type="xsd:int", minOccurs=0, maxOccurs=-1)],
+        applicationAttribute=MappingSchemaAttribute(name="nums", type="xsd:int", minOccurs=1, maxOccurs=-1),
+        midPointAttribute=MappingSchemaAttribute(name="outs", type="xsd:int", minOccurs=0, maxOccurs=-1),
         inbound=False,
         example=[
             IOExample(
@@ -183,8 +183,8 @@ def test_build_prompt_data_multivalued_to_multivalued():
 )
 async def test_suggest_mapping_script_inbound(monkeypatch):
     req = SuggestMappingRequest(
-        applicationAttribute=[MappingSchemaAttribute(name="firstName", type="xsd:string", minOccurs=1, maxOccurs=1)],
-        midPointAttribute=[MappingSchemaAttribute(name="givenName", type="xsd:string", minOccurs=0, maxOccurs=1)],
+        applicationAttribute=MappingSchemaAttribute(name="firstName", type="xsd:string", minOccurs=1, maxOccurs=1),
+        midPointAttribute=MappingSchemaAttribute(name="givenName", type="xsd:string", minOccurs=0, maxOccurs=1),
         inbound=True,
         example=[
             IOExample(
@@ -210,8 +210,8 @@ async def test_suggest_mapping_script_inbound(monkeypatch):
 )
 async def test_suggest_mapping_script_outbound(monkeypatch):
     req = SuggestMappingRequest(
-        applicationAttribute=[MappingSchemaAttribute(name="firstName", type="xsd:string", minOccurs=1, maxOccurs=1)],
-        midPointAttribute=[MappingSchemaAttribute(name="givenName", type="xsd:string", minOccurs=0, maxOccurs=1)],
+        applicationAttribute=MappingSchemaAttribute(name="firstName", type="xsd:string", minOccurs=1, maxOccurs=1),
+        midPointAttribute=MappingSchemaAttribute(name="givenName", type="xsd:string", minOccurs=0, maxOccurs=1),
         inbound=False,
         example=[
             IOExample(
@@ -237,8 +237,8 @@ async def test_suggest_mapping_script_outbound(monkeypatch):
 )
 async def test_suggest_mapping_script_has_manager_single(monkeypatch):
     req = SuggestMappingRequest(
-        applicationAttribute=[MappingSchemaAttribute(name="manager", type="xsd:string", minOccurs=1, maxOccurs=1)],
-        midPointAttribute=[MappingSchemaAttribute(name="hasManager", type="xsd:boolean", minOccurs=0, maxOccurs=1)],
+        applicationAttribute=MappingSchemaAttribute(name="manager", type="xsd:string", minOccurs=1, maxOccurs=1),
+        midPointAttribute=MappingSchemaAttribute(name="hasManager", type="xsd:boolean", minOccurs=0, maxOccurs=1),
         inbound=True,
         example=[
             IOExample(
@@ -266,8 +266,8 @@ async def test_suggest_mapping_script_has_manager_single(monkeypatch):
 )
 async def test_suggest_mapping_script_previous_without_errorlog(monkeypatch):
     req = SuggestMappingRequest(
-        applicationAttribute=[MappingSchemaAttribute(name="email", type="xsd:string", minOccurs=1, maxOccurs=1)],
-        midPointAttribute=[MappingSchemaAttribute(name="normalizedEmail", type="xsd:string", minOccurs=0, maxOccurs=1)],
+        applicationAttribute=MappingSchemaAttribute(name="email", type="xsd:string", minOccurs=1, maxOccurs=1),
+        midPointAttribute=MappingSchemaAttribute(name="normalizedEmail", type="xsd:string", minOccurs=0, maxOccurs=1),
         inbound=False,
         example=[
             IOExample(
@@ -291,8 +291,8 @@ async def test_suggest_mapping_script_previous_without_errorlog(monkeypatch):
 )
 async def test_suggest_mapping_script_allows_abstain_response(monkeypatch):
     req = SuggestMappingRequest(
-        applicationAttribute=[MappingSchemaAttribute(name="device", type="xsd:string", minOccurs=1, maxOccurs=1)],
-        midPointAttribute=[MappingSchemaAttribute(name="costCenter", type="xsd:string", minOccurs=0, maxOccurs=1)],
+        applicationAttribute=MappingSchemaAttribute(name="device", type="xsd:string", minOccurs=1, maxOccurs=1),
+        midPointAttribute=MappingSchemaAttribute(name="costCenter", type="xsd:string", minOccurs=0, maxOccurs=1),
         inbound=True,
         example=[
             IOExample(
