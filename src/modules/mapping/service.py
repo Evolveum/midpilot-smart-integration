@@ -48,7 +48,7 @@ def build_prompt_data(req: SuggestMappingRequest) -> str:
       - Multi-value attributes are handled according to `maxOccurs` (True if > 1 or -1).
       - Empty lists are serialized as `null`.
       - For single-valued attributes, a parsed list is unwrapped to its first element.
-      - Values are parsed via `parse_value_by_type(...)`.
+      - Values are parsed via `quote_by_type(...)`.
     """
 
     if len(req.applicationAttribute) != 1 or len(req.midPointAttribute) != 1:
@@ -86,8 +86,10 @@ def build_prompt_data(req: SuggestMappingRequest) -> str:
 
     lines = []
     for ex in req.example:
-        app_val = extract_and_emit(ex.application, app_attr, app_multi)
-        mid_val = extract_and_emit(ex.midPoint, mid_attr, mid_multi)
+        extracted_app_val = extract_and_emit(ex.application, app_attr, app_multi)
+        extracted_mid_val = extract_and_emit(ex.midPoint, mid_attr, mid_multi)
+        app_val = extracted_app_val if extracted_app_val is not None else "null"
+        mid_val = extracted_mid_val if extracted_mid_val is not None else "null"
 
         if inbound:
             source_literal = f"[input: {app_val}]"

@@ -123,7 +123,7 @@ class SuggestMappingResponse(BaseModel):
         json_schema_extra={
             "example": {
                 "description": "Uppercase input",
-                "transformationScript": "// Uppercase input\n(input?.toUpperCase())",
+                "transformationScript": "// Uppercase input\n(default(input, '').uc())",
             }
         }
     )

@@ -7,7 +7,7 @@ import pytest
 from src.utils import normalize_attr_name_for_mel, quote_by_type
 
 
-def test_parse_value_by_type_single_and_multivalued():
+def test_quote_by_type_single_and_multivalued():
     # single-valued
     assert quote_by_type(["42"], "xsd:int", multivalued=False) == "42"
     assert quote_by_type(["true"], "xsd:boolean", multivalued=False) == "true"
@@ -53,5 +53,5 @@ def test_parse_value_by_type_single_and_multivalued():
         ("name", "name"),
     ],
 )
-def test_normalize_attr_name_for_groovy(raw_name, expected):
+def test_normalize_attr_name_for_mel(raw_name, expected):
     assert normalize_attr_name_for_mel(raw_name) == expected
