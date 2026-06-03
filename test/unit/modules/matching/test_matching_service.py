@@ -8,7 +8,6 @@ from unittest.mock import patch
 import pytest
 
 from src.common.errors import LLMResponseValidationException
-from src.common.schema import ModelOptions
 from src.modules.matching.schema import MatchSchemaRequest, SchemaAttributeMatch
 from src.modules.matching.service import build_match_schema_prompt_data, match_midpoint_schema
 from test.unit.modules.utils import response_mock
@@ -165,13 +164,3 @@ async def test_full_grouped_example():
 async def test_invalid_json_response():
     with pytest.raises(LLMResponseValidationException):
         await match_midpoint_schema(basic_req)
-
-
-@pytest.mark.asyncio
-@patch("src.modules.matching.service.get_default_llm")
-async def test_model_options_forwarded_to_llm(mock_get_default_llm):
-    mock_get_default_llm.return_value = response_mock(json.dumps({"pairs": []})).return_value
-    model_options = ModelOptions(modelName="custom-model", reasoningEffort="low")
-    req = basic_req.model_copy(update={"modelOptions": model_options})
-    await match_midpoint_schema(req)
-    mock_get_default_llm.assert_called_once_with(model_options=model_options)

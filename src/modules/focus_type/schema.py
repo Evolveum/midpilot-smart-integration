@@ -7,7 +7,7 @@ from typing import Optional
 
 from pydantic import BaseModel, Field
 
-from ...common.schema import ApplicationSchema, BaseRequest
+from ...common.schema import ApplicationSchema
 
 
 class FocusType(str, Enum):
@@ -22,7 +22,7 @@ class FocusType(str, Enum):
     ServiceType = "ServiceType"
 
 
-class SuggestFocusTypeRequest(BaseRequest):
+class SuggestFocusTypeRequest(BaseModel):
     """
     Request schema for suggesting a focus type.
     """

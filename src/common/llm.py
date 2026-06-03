@@ -4,7 +4,7 @@
 import asyncio
 import logging
 import ssl
-from typing import Any, Optional
+from typing import Any
 
 import httpx
 from langchain.output_parsers import RetryWithErrorOutputParser
@@ -14,32 +14,17 @@ from langchain_core.runnables import Runnable, RunnableConfig, RunnableLambda, R
 from langchain_openai import ChatOpenAI
 
 from ..config import config
-from .schema import ModelOptions
 
 logger = logging.getLogger(__name__)
 
 
-def get_default_llm(temperature: float = 1.0, model_options: Optional[ModelOptions] = None) -> ChatOpenAI:
+def get_default_llm(temperature: float = 1.0) -> ChatOpenAI:
     """
     Create and return a ChatOpenAI LLM instance with default parameters.
 
     :param temperature: Sampling temperature for the LLM (controls randomness).
-    :param model_options: Optional per-request overrides for model name and reasoning effort.
     :return: Configured ChatOpenAI instance.
     """
-    model_name = config.llm.model_name
-    reasoning_effort = config.llm.reasoning_effort
-
-    if model_options:
-        if model_options.modelName:
-            model_name = model_options.modelName
-        if model_options.reasoningEffort:
-            reasoning_effort = model_options.reasoningEffort
-
-    logger.debug(
-        f"[LLM Request] Model Name: {model_name}, Reasoning Effort: {reasoning_effort}, Temperature: {temperature}"
-    )
-
     verify: ssl.SSLContext | bool = (
         ssl.create_default_context(cafile=config.llm.ca_cert_file) if config.llm.ca_cert_file else True
     )
@@ -47,9 +32,9 @@ def get_default_llm(temperature: float = 1.0, model_options: Optional[ModelOptio
     return ChatOpenAI(
         openai_api_key=config.llm.openai_api_key,
         openai_api_base=config.llm.openai_api_base,
-        model_name=model_name,
+        model_name=config.llm.model_name,
         temperature=temperature,
-        reasoning_effort=reasoning_effort,
+        reasoning_effort=config.llm.reasoning_effort,
         extra_body=config.llm.extra_body,
         http_async_client=http_client,
     )

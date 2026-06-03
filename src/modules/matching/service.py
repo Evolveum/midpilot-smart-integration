@@ -67,7 +67,7 @@ async def match_midpoint_schema(
     mid_json = pretty_json(prompt_data["MidPoint_schema"])
     res_json = pretty_json(prompt_data["Resource_schema"])
     # 2. Invoke the chain
-    llm = get_default_llm(model_options=req.modelOptions)
+    llm = get_default_llm()
     chain = make_basic_chain(prompt, llm, parser)
     try:
         parsed = await chain.ainvoke(

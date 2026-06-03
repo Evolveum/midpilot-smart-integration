@@ -59,7 +59,7 @@ async def suggest_focus_type(req: SuggestFocusTypeRequest) -> SuggestFocusTypeRe
     payload = build_focus_type_prompt_data(req)
     payload_json = pretty_json(payload)
 
-    llm = get_default_llm(model_options=req.modelOptions)
+    llm = get_default_llm()
     chain = make_basic_chain(prompt, llm, parser)
 
     try:

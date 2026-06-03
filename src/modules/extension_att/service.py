@@ -70,7 +70,7 @@ async def suggest_extension(req: SuggestExtensionRequest) -> SuggestExtensionRes
     """
     variables = _build_extension_prompt_data(req)
 
-    llm = get_default_llm(model_options=req.modelOptions)
+    llm = get_default_llm()
     chain = make_basic_chain(prompt, llm, parser)
 
     try:

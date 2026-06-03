@@ -60,26 +60,3 @@ def test_suggest_focus_type_success():
     data = resp.json()
     assert "focusTypeName" in data
     assert data["focusTypeName"] in [ft.value for ft in FocusType]
-
-
-def test_suggest_focus_type_with_model_options():
-    payload = {
-        "kind": "account",
-        "intent": "default",
-        "schema": {
-            "name": "ri:account",
-            "attribute": [
-                {"name": "c:attributes/ri:email", "type": "xsd:string", "minOccurs": 1, "maxOccurs": 1},
-                {"name": "c:attributes/ri:fullname", "type": "xsd:string", "minOccurs": 1, "maxOccurs": 1},
-            ],
-        },
-        "modelOptions": {
-            "modelName": "gpt-oss-120b",
-        },
-    }
-    resp = client.post(f"{base_url}/focusType/suggestFocusType", json=payload)
-    assert resp.status_code == 200
-
-    data = resp.json()
-    assert "focusTypeName" in data
-    assert data["focusTypeName"] in [ft.value for ft in FocusType]
