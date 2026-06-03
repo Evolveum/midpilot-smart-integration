@@ -69,25 +69,25 @@ def _quote_single_by_type(raw: str, type_str: str) -> str:
         raise ValueError(f"Expected 'true' or 'false' for boolean, got {raw!r}")
 
     if t == "xsd:string":
-        return f"\"{v}\""
+        return f'"{v}"'
 
     if t in ("xsd:int", "xsd:long"):
         try:
-            int(v) # Check if it's a valid integer.
+            int(v)  # Check if it's a valid integer.
             return v
         except ValueError:
             raise ValueError(f"Invalid integer {raw!r} for type {type_str}")
 
     if t in ("xsd:double", "xsd:float"):
         try:
-            float(v) # Check if it's a valid float
+            float(v)  # Check if it's a valid float
             return v
         except ValueError:
             raise ValueError(f"Invalid float {raw!r} for type {type_str}")
 
     if t == "xsd:datetime":
         try:
-            datetime.fromisoformat(v) # Check if it's a valid datetime in iso format
+            datetime.fromisoformat(v)  # Check if it's a valid datetime in iso format
             return v
         except Exception as e:
             raise ValueError(f"Invalid datetime {raw!r}: {e}") from e
@@ -138,6 +138,7 @@ def quote_by_type(raw: Any, type_str: str, multivalued: bool = False) -> Any:
     raise ValueError(
         f"Expected single non-multivalued value for type {type_str}, got list of length {len(parsed_list)}"
     )
+
 
 def pretty_json(value: Any) -> str:
     """

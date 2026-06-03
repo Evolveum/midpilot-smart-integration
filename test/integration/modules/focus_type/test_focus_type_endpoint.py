@@ -74,7 +74,7 @@ def test_suggest_focus_type_with_model_options():
             ],
         },
         "modelOptions": {
-            "modelName": "gpt-4o-mini",
+            "modelName": "gpt-oss-120b",
         },
     }
     resp = client.post(f"{base_url}/focusType/suggestFocusType", json=payload)

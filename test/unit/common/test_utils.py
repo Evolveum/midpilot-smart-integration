@@ -6,16 +6,15 @@ import pytest
 
 from src.utils import normalize_attr_name_for_mel, quote_by_type
 
+
 def test_parse_value_by_type_single_and_multivalued():
     # single-valued
     assert quote_by_type(["42"], "xsd:int", multivalued=False) == "42"
     assert quote_by_type(["true"], "xsd:boolean", multivalued=False) == "true"
     assert quote_by_type(["false"], "xsd:boolean", multivalued=False) == "false"
-    assert quote_by_type(["hello"], "xsd:string", multivalued=False) == "\"hello\""
-    assert (quote_by_type(["2023-01-02T03:04:05.000"], "xsd:dateTime", multivalued=False) ==
-            "2023-01-02T03:04:05.000")
-    assert (quote_by_type(["2023-01-02T03:04:05.000"], "xsd:string", multivalued=False) ==
-            "\"2023-01-02T03:04:05.000\"")
+    assert quote_by_type(["hello"], "xsd:string", multivalued=False) == '"hello"'
+    assert quote_by_type(["2023-01-02T03:04:05.000"], "xsd:dateTime", multivalued=False) == "2023-01-02T03:04:05.000"
+    assert quote_by_type(["2023-01-02T03:04:05.000"], "xsd:string", multivalued=False) == '"2023-01-02T03:04:05.000"'
 
     # multivalued
     assert quote_by_type(["1", "2", "3"], "xsd:int", multivalued=True) == ["1", "2", "3"]

@@ -39,10 +39,10 @@ def test_suggest_mapping_endpoint_shape():
             },
         ],
         "errorLog": "Unexpected error during validation of script in (new) Mapping expression evaluation: ERROR: ("
-                    "new) Mapping expression evaluation:1:12: mismatched input '<EOF>' expecting {'==', '!=', 'in', "
-                    "'<', '<=', '>=', '>', '&&', '||', '[', '.', '-', ':', '+', '*', '/', '%%'} \n"
-                    "| input?.uc() \n"
-                    "| ...........^.",
+        "new) Mapping expression evaluation:1:12: mismatched input '<EOF>' expecting {'==', '!=', 'in', "
+        "'<', '<=', '>=', '>', '&&', '||', '[', '.', '-', ':', '+', '*', '/', '%%'} \n"
+        "| input?.uc() \n"
+        "| ...........^.",
         "previousScript": "// Uppercase given name\ninput?.uc()",
     }
 
@@ -57,7 +57,6 @@ def test_suggest_mapping_endpoint_shape():
     assert "transformationScript" in data
     assert isinstance(data["transformationScript"], str)
     script = data["transformationScript"]
-    print(script)
     assert script.strip() != ""
 
     first_line = script.splitlines()[0]

@@ -3,6 +3,7 @@
 # Licensed under the EUPL-1.2 or later.
 import asyncio
 import logging
+import ssl
 from typing import Any, Optional
 
 import httpx
@@ -39,7 +40,10 @@ def get_default_llm(temperature: float = 1.0, model_options: Optional[ModelOptio
         f"[LLM Request] Model Name: {model_name}, Reasoning Effort: {reasoning_effort}, Temperature: {temperature}"
     )
 
-    http_client = httpx.AsyncClient(verify=config.llm.ca_cert_file or True)
+    verify: ssl.SSLContext | bool = (
+        ssl.create_default_context(cafile=config.llm.ca_cert_file) if config.llm.ca_cert_file else True
+    )
+    http_client = httpx.AsyncClient(verify=verify)
     return ChatOpenAI(
         openai_api_key=config.llm.openai_api_key,
         openai_api_base=config.llm.openai_api_base,

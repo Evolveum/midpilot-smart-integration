@@ -64,21 +64,25 @@ def build_prompt_data(req: SuggestMappingRequest) -> str:
     app_multi = is_multi(app_attr)
     mid_multi = is_multi(mid_attr)
 
-    # general side-processing function
-    def extract_and_emit(raw_examples: list[ValueExample] | None, attr: BaseSchemaAttribute, multi: bool):
+    # general side-processing function; returns the literal string to emit
+    def extract_and_emit(raw_examples: list[ValueExample] | None, attr: BaseSchemaAttribute, multi: bool) -> str:
         # pull out the raw string values (or [] if missing/empty)
         raw = next((ve.value for ve in (raw_examples or []) if ve.name == attr.name), [])
         val = quote_by_type(raw, attr.type, multivalued=multi)
 
         # empty-list → null
         if isinstance(val, list) and not val:
-            val = None
+            return "null"
 
         # if single-valued but got a list, unwrap
         if not multi and isinstance(val, list):
             val = val[0]
 
-        return val
+        if val is None:
+            return "null"
+        if isinstance(val, list):
+            return "[" + ", ".join(str(v) for v in val) + "]"
+        return str(val)
 
     lines = []
     for ex in req.example:
