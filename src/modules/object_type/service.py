@@ -142,7 +142,7 @@ async def suggest_delineation(req: SuggestObjectTypeRequest) -> SuggestObjectTyp
         regen_messages = build_regeneration_messages(req.regenerateMode, req.previousDelineation)
 
     # 4) Invoke LLM chain
-    llm = get_default_llm(model_options=req.modelOptions)
+    llm = get_default_llm()
     chain = make_basic_chain(prompt, llm, parser)
 
     try:

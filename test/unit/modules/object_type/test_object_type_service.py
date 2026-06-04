@@ -8,7 +8,6 @@ from unittest.mock import patch
 import pytest
 
 from src.common.errors import LLMResponseValidationException
-from src.common.schema import ModelOptions
 from src.modules.object_type.schema import (
     ObjectTypeSuggestion,
     SuggestObjectTypeRequest,
@@ -179,16 +178,6 @@ async def test_suggest_delineation_no_rules_returns_empty():
 async def test_suggest_delineation_bad_json_raises():
     with pytest.raises(LLMResponseValidationException):
         await suggest_delineation(request)
-
-
-@pytest.mark.asyncio
-@patch("src.modules.object_type.service.get_default_llm")
-async def test_model_options_forwarded_to_llm(mock_get_default_llm):
-    mock_get_default_llm.return_value = response_mock(_NO_RULES_JSON).return_value
-    model_options = ModelOptions(modelName="custom-model", reasoningEffort="low")
-    req = request.model_copy(update={"modelOptions": model_options})
-    await suggest_delineation(req)
-    mock_get_default_llm.assert_called_once_with(model_options=model_options)
 
 
 @pytest.mark.asyncio

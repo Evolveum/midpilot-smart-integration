@@ -7,7 +7,7 @@ from typing import List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from ...common.schema import BaseRequest, BaseSchemaAttribute
+from ...common.schema import BaseSchemaAttribute
 
 
 # Allowed simple xsd types for clarity / validation
@@ -53,15 +53,17 @@ class IOExample(BaseModel):
     )
 
 
-class SuggestMappingRequest(BaseRequest):
+class SuggestMappingRequest(BaseModel):
     """
     One mapping job: attributes list and a handful of I/O examples.
     """
 
-    applicationAttribute: List[MappingSchemaAttribute] = Field(
-        ..., description="List of application-side attributes to map."
+    applicationAttribute: MappingSchemaAttribute = Field(
+        ..., description="Definition of the application-side attribute to map."
     )
-    midPointAttribute: List[MappingSchemaAttribute] = Field(..., description="List of midpoint-side attributes to map.")
+    midPointAttribute: MappingSchemaAttribute = Field(
+        ..., description="Definition of the midPoint-side attribute to map."
+    )
     inbound: bool = Field(..., description="Is the mapping to be produced an inbound one?")
     example: List[IOExample] = Field(..., description="Several (application -> midPoint) examples for inference.")
 
@@ -80,10 +82,13 @@ class SuggestMappingRequest(BaseRequest):
     model_config = {
         "json_schema_extra": {
             "example": {
-                "applicationAttribute": [
-                    {"name": "c:attributes/icfs:name", "type": "xsd:string", "minOccurs": 1, "maxOccurs": 1}
-                ],
-                "midPointAttribute": [{"name": "c:name", "type": "xsd:string", "minOccurs": 0, "maxOccurs": 1}],
+                "applicationAttribute": {
+                    "name": "c:attributes/icfs:name",
+                    "type": "xsd:string",
+                    "minOccurs": 1,
+                    "maxOccurs": 1,
+                },
+                "midPointAttribute": {"name": "c:name", "type": "xsd:string", "minOccurs": 0, "maxOccurs": 1},
                 "inbound": True,
                 "example": [
                     {

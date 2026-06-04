@@ -7,7 +7,7 @@ from typing import List, Optional, Tuple
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from src.common.schema import ApplicationSchema, BaseRequest
+from src.common.schema import ApplicationSchema
 
 
 class RegenerateMode(str, Enum):
@@ -114,7 +114,7 @@ class Statistics(BaseModel):
     timestamp: Optional[str] = Field(None, description="ISO timestamp when statistics were computed.")
 
 
-class SuggestObjectTypeRequest(BaseRequest):
+class SuggestObjectTypeRequest(BaseModel):
     """
     Request payload for suggesting object types based on schema and statistics.
     Optionally includes structured validationErrorFeedback from backend to guide a corrective retry.

@@ -13,8 +13,8 @@ base_url = config.app.api_base_url
 
 def test_suggest_mapping_endpoint_shape():
     payload = {
-        "applicationAttribute": [{"name": "firstName", "type": "xsd:string", "minOccurs": 1, "maxOccurs": 1}],
-        "midPointAttribute": [{"name": "given_name", "type": "xsd:string", "minOccurs": 0, "maxOccurs": 1}],
+        "applicationAttribute": {"name": "firstName", "type": "xsd:string", "minOccurs": 1, "maxOccurs": 1},
+        "midPointAttribute": {"name": "given_name", "type": "xsd:string", "minOccurs": 0, "maxOccurs": 1},
         "inbound": True,
         "example": [
             {

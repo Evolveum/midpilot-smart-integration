@@ -6,7 +6,7 @@ from typing import List
 
 from pydantic import BaseModel, Field
 
-from ...common.schema import ApplicationSchema, BaseRequest
+from ...common.schema import ApplicationSchema
 
 
 class BasicAttributeStats(BaseModel):
@@ -37,7 +37,7 @@ class BasicAttributeStats(BaseModel):
     )
 
 
-class SuggestExtensionRequest(BaseRequest):
+class SuggestExtensionRequest(BaseModel):
     """
     Input for suggesting correlation attributes from UNMAPPED application attributes.
 

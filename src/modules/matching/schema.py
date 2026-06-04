@@ -6,7 +6,7 @@ from typing import List
 
 from pydantic import BaseModel, Field
 
-from ...common.schema import ApplicationSchema, BaseRequest, MidpointSchema
+from ...common.schema import ApplicationSchema, MidpointSchema
 from .schema_examples import (
     midpoint_email_address_description_example,
     midpoint_name_description_example,
@@ -16,7 +16,7 @@ from .schema_examples import (
 )
 
 
-class MatchSchemaRequest(BaseRequest):
+class MatchSchemaRequest(BaseModel):
     """
     Request schema for suggesting attribute matching.
     """

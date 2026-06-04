@@ -63,7 +63,7 @@ async def complex_pairing(req: Any) -> ComplexPairingResponse:
     """
     pairs_json = pretty_json(_pairs_json(req))
 
-    llm = get_default_llm(model_options=req.modelOptions)
+    llm = get_default_llm()
     chain = make_basic_chain(prompt_all, llm, verdict_parser)
     try:
         verdict = await chain.ainvoke({"pairs_json": pairs_json}, config={"callbacks": [langfuse_handler]})
