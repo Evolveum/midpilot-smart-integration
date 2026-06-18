@@ -20,7 +20,13 @@ class CheckResult(BaseModel):
     error: Optional[str] = Field(None)
 
 
+class AiInfo(BaseModel):
+    provider: str
+    model: str
+
+
 class HealthResponse(BaseModel):
     status: HealthStatus
     version: str
+    ai: AiInfo
     checks: List[CheckResult]

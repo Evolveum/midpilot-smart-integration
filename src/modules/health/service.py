@@ -11,7 +11,7 @@ from ...common.langfuse import langfuse
 from ...common.llm import get_default_llm
 from ...config import config
 from ...utils import get_version_info
-from .schema import CheckResult, HealthResponse, HealthStatus
+from .schema import AiInfo, CheckResult, HealthResponse, HealthStatus
 
 logger = logging.getLogger(__name__)
 
@@ -45,4 +45,5 @@ async def run_health_checks() -> HealthResponse:
         checks.append(CheckResult(name="langfuse", status=HealthStatus.DISABLED))
 
     overall = HealthStatus.OK if all(c.status != HealthStatus.ERROR for c in checks) else HealthStatus.ERROR
-    return HealthResponse(status=overall, version=get_version_info(), checks=checks)
+    ai = AiInfo(provider=config.llm.openai_api_base, model=config.llm.model_name)
+    return HealthResponse(status=overall, version=get_version_info(), ai=ai, checks=checks)
