@@ -74,6 +74,7 @@ Null, empty, and missing-like values:
 - If the target is missing, empty, or null for most examples and only rarely non-empty, abstain unless a strong structural rule is clearly demonstrated.
 - Use `isNull()` and `isPresent()` functions for null checks instead of `== null` or `!= null`.
 - Use `.?` optional selection operator when accessing potentially null structured data.
+- Never use `.?` immediately before a function call. For nullable strings, use `default(value, '').contains('x')` or `isPresent(value) ? value.contains('x') : false` instead of `value.?contains('x')`.
 
 String and text normalization policy:
 - Allow casing, whitespace handling, separator changes, substring extraction, prefix/suffix removal, and concatenation only when consistently demonstrated.
@@ -85,7 +86,9 @@ String and text normalization policy:
 - For lower-casing, use `.lc()` function.
 - For normalized form, use `norm()` function.
 - For ASCII-only conversion, use `ascii()` function.
-- For string concatenation, prefer `format()` function over `+` operator for reliable handling of null values.
+- For string concatenation or formatting, prefer method-form string formatting with stringified operands: `'%s%s'.format([stringify(a), stringify(b)])`.
+- Avoid `+` for string concatenation when any operand may be null or PolyString.
+- Do not use global `format(...)`.
 
 Date and time policy:
 - Infer date/time formatting only when the examples clearly show the same date or time represented in different formats.
@@ -112,16 +115,17 @@ Categorical mapping policy:
 {{
 'key1': 'value1',
 'key2': 'value2'
-}}[?input]
+}}[input]
 ```
 For example:
 ```MEL
 {{
 'active': 'enabled',
 'inactive': 'disabled'
-}}[?input]
+}}[input]
 ```
-- **Always** keep the `input` in the `[?]`, that means `[?input]`. It acts as a selector of a particular value from the map.
+- **Always** keep the source variable in the `[]` selector. It acts as a selector of a particular value from the map.
+- Use direct map lookup only when the examples cover all meaningful source values for the closed enumeration. If a source value may be missing from the map, abstain instead of relying on optional map lookup.
 - Use the observed values (values of an application attribute) as a keys
 - Use the known enum values (possible values of the categorical midPoint property) as a values.
 - If the constructed map contains a lot of key/value pairs, put each of them on a single line.
@@ -132,7 +136,7 @@ Representation fidelity:
 - Do not trim, normalize, lowercase, uppercase, sort, deduplicate, or reformat output unless the examples clearly require it.
 - If the examples show output values as strings, return strings.
 - If the examples show output values as booleans or numbers, return booleans or numbers.
-- If the examples show a list representation, preserve list ordering and element representation unless a consistent transformation proves otherwise.
+- This service currently expects a single output value. Do not return lists, maps, or multi-valued expressions as the final result unless the target examples clearly require that exact representation.
 
 Simplicity policy:
 - Prefer the simplest deterministic transformation that explains the examples.
@@ -145,13 +149,22 @@ Code constraints:
 - MEL is an expression language, not a scripting language. The entire transformation must be a single expression.
 - No statements, declarations, or blocks. Only inline expressions.
 - Use single-quoted strings: `'hello'`, not `"hello"`.
-- No string interpolation. Use `format()` function for string formatting.
+- No string interpolation. Use method-form `.format([...])` for string formatting.
 - Use `.?` optional selection operator for nullable property access: `focus.?name` instead of `focus.name`.
+- Never use `.?` before function calls. `input.?contains('#')` is invalid; use `default(input, '').contains('#')` or `isPresent(input) ? input.contains('#') : false`.
 - **Do not use `?.`**, because such operator does not exist in MEL. Always use `.?`.
 - Use `isNull()` and `isPresent()` functions for null checks.
 - Use `default()` function to provide fallback values.
 - Prefer `default()` function in favor of conditionals (ternary operator).
+- If examples require `null -> null` and a non-null input transformation, prefer `isNil(input) ? nil : transformedValue` when the runtime supports `nil`; otherwise abstain if the null-preserving behavior cannot be expressed safely.
+- If the script itself must return null from a conditional branch, use `nil` instead of literal `null` when the runtime supports it.
+- Convert possible PolyString values with `stringify()` before string manipulation, e.g. `stringify(fullName)` or `stringify(givenName.?norm)`.
 - Don't use functions, which are not listed in the MEL reference.
+- Do not use `let()`, `??`, `?.`, `.join()`, `.replaceAll()`, `.replaceFirst()`, global `format(...)`, `return`, `def`, `var`, `const`, assignments, Groovy closures, JavaScript syntax, or JavaScript array methods.
+- Do not use `.join()`: the current midPoint MEL runtime reports it as an undeclared reference.
+- You may use `.split()` with guarded fixed indexes. Avoid arbitrary-length split-map-join pipelines when the result needs to be joined into a string.
+- Use `.map()` and `.filter()` only when the expression does not require `.join()` and remains valid in this runtime.
+- Do not generate regex replacement. `.matches()` is allowed only for boolean tests; replacement must use literal `.replace(search, replacement)` or abstain.
 - The expression must evaluate to the result.
 - Do not return an expression whose only logic is `null`; use JSON `null` fields instead.
 - For string outputs containing backslashes or special characters, use proper escaping or concatenation.
@@ -183,7 +196,7 @@ more complex expressions.
 - String: `'Hello world!'` (single-quoted)
 - Numeric: `42`, `3.14`
 - Boolean: `true`, `false`
-- Null: `null`
+- Null: `null` as a literal exists, but do not use it as a ternary result branch. Use `nil` in the expression if the runtime supports it; otherwise abstain if null-preserving behavior cannot be expressed safely.
 - List: `[1, 2, 3]`, `['foo', 'bar']`
 - Map: `{{'one': 'unus', 'two': 'duo'}}`
 - Timestamp: `timestamp('2026-06-15T10:30:45.123Z')`
@@ -197,7 +210,7 @@ more complex expressions.
 - Conditional: `condition ? valueIfTrue : valueIfFalse`.
   **Both branches have to return the same data type**. E.g. this will not work `isPresent(input) ? input.contains('#') : null`.
   The correct expression is `isPresent(input) ? input.contains('#') : false`.
-  **Never** use `null` as a return value from the conditional operator branch.
+  **Never** use literal `null` as a return value from the conditional operator branch. Use `nil` if a null value is required and supported; otherwise abstain if null-preserving behavior cannot be expressed safely.
 - Selection: `.` (assumes non-null), `.?` (optional, handles null).
   - The optional selection is **not** `?.` as in other languages, but `.?` instead.
   - The optional selection does **not** allow functions invocations. E.g. this will not work `input.?contains('#').
@@ -211,6 +224,7 @@ more complex expressions.
 - Use `isNull(value)` to check for null: `isNull(foo)`
 - Use `isPresent(value)` to check for presence: `isPresent(foo)`
 - Use `default(value, fallback)` for defaults: `default(foo, 'unknown')`
+- Use `nil` for a null result branch when the runtime supports it: `isNil(input) ? nil : '%s suffix'.format([stringify(input)])`.
 
 === Common issues and mistakes
 
@@ -225,11 +239,12 @@ more complex expressions.
   - `isPresent(input) ? true : false)` 
   - `isPresent(input) ? input.lc() : '')` 
   - `isNull(input) ? '' : input.replace('something to replace', ''))` 
-  - `isNull(input) ? 'Input is null' : '%s-suffix'.format([input])` 
+  - `isNull(input) ? 'Input is null' : '%s-suffix'.format([input])`
+  - `isNil(input) ? nil : '%s suffix'.format([stringify(input)])` if the runtime supports `nil` and null must be preserved.
   Often times you can avoid the conditional ternary operator altogether, what is also a preferable solution:
   - `default(input, '').lc()` instead of `isPresent(input) ? input.lc() : ''`
   - `default(input, '').replace('something to replace', ''))` instead of `isNull(input) ? '' : input.replace('something to replace', ''))`
-  **Never** use `null` as a return value of any conditional operator branch.
+  **Never** use literal `null` as a return value of any conditional operator branch.
 
 === String Functions
 
@@ -253,7 +268,7 @@ more complex expressions.
 - `.charAt(index)`: Get character at index.
 - `.matches(regex)`: Check if matches RE2 regex.
 - `matches(string, regex)`: Global version of matches.
-- `.format(list)`: Format string. Example: `'%s has %d apples'.format(['Jack', 3])` returns `'Jack has 3 apples'`
+- `.format(list)`: Format string. Example: `'%s has %d apples'.format(['Jack', 3])` returns `'Jack has 3 apples'`. Use only this method form with stringified nullable/PolyString operands; do not use global `format(...)`.
 - `str(value)`: Convert to string (nullable).
 - `stringify(value)`, `stringify(value, default)`: Format as string, always non-null.
 
@@ -264,7 +279,7 @@ more complex expressions.
 - `.isEmpty()`: Check if empty.
 - `isEmpty(list)`: Global version.
 - `list(value)`: Convert to list.
-- `.join()`, `.join(separator)`: Join list into string. Example: `['a', 'b'].join(',')` returns `'a,b'`
+- Do not use `.join()` for now. Some MEL documentation mentions it, but current deployed runtimes report `undeclared reference to 'join'`.
 - `single(list)`: Get single element from single-element list.
 - `.filter(x, predicate)`: Filter list. Example: `items.filter(i, i.size() > 5)`
 - `.map(x, transform)`: Transform list. Example: `items.map(i, i.uc())`
@@ -345,12 +360,20 @@ Rules:
 - Do not abstain just because one or two examples are obvious outliers; follow the majority rule when it is structurally consistent.
 - If fewer than 3 meaningful examples support the rule, abstain unless the rule is a trivial structural transformation.
 - Prefer the simplest deterministic transformation using the fewest variables.
-- Use `.?` for optional property access on nullable values.
+- Use `.?` for optional property access on nullable structured values.
+- Never use `.?` immediately before a function call. For nullable strings, use `default(value, '').contains('x')` or `isPresent(value) ? value.contains('x') : false`.
 - Use `isNull()` and `isPresent()` for null checks.
-- **Never** use `null` as a return value from the conditional operator branch.
+- **Never** use literal `null` as a return value from the conditional operator branch. Use `nil` when the runtime supports it; otherwise abstain if null-preserving behavior cannot be expressed safely.
 - Use `default()` for fallback values.
-- Use `format()` for string formatting instead of string interpolation.
+- Use method-form string formatting `'%s'.format([stringify(value)])` instead of string interpolation or `+` with variables. Do not use global `format(...)`.
 - Use single-quoted strings.
+- Convert possible PolyString values with `stringify()` before `.substring()`, `.replace()`, `.contains()`, `.trim()`, or concatenation.
+- Do not use `let()`, `??`, `?.`, `.join()`, `.replaceAll()`, `.replaceFirst()`, global `format(...)`, `return`, `def`, assignments, Groovy syntax, or JavaScript syntax.
+- You may use `.split()` with guarded fixed indexes. Avoid arbitrary-length split-map-join pipelines when the result needs to be joined into a string.
+- Use `.map()` and `.filter()` only when the expression does not require `.join()` and remains valid in this runtime.
+- Do not generate regex replacement. `.matches()` is allowed only for boolean tests; replacement must use literal `.replace(search, replacement)` or abstain.
+- Escape backslashes so the MEL expression remains valid after JSON unescaping.
+- Before using `.substring(...)`, `.charAt(...)`, or indexed split access like `x.split(';')[1]`, guard that the string/list has the required length; otherwise abstain.
 - If expected outputs are whole-number strings with a `.0` suffix, preserve that suffix exactly.
 - Ensure the MEL expression remains syntactically valid after JSON unescaping.
 - Ensure the first line of `transformationScript` is exactly `// ` followed by the same text as `description`.
