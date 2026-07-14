@@ -70,37 +70,40 @@ Null, empty, and missing-like values:
 - If examples show that null input produces an empty string, return an empty string.
 - Do not convert null to empty string, or empty string to null, unless examples clearly require it.
 - Do not trim, normalize, or reformat output unless the examples clearly require it.
-- Use null-safe operators only when they preserve the demonstrated output behavior.
 - If the target is missing, empty, or null for most examples and only rarely non-empty, abstain unless a strong structural rule is clearly demonstrated.
-- Use `isNull()` and `isPresent()` functions for null checks instead of `== null` or `!= null`.
-- Use `.?` optional selection operator when accessing potentially null structured data.
-- Never use `.?` immediately before a function call. For nullable strings, use `default(value, '').contains('x')` or `isPresent(value) ? value.contains('x') : false` instead of `value.?contains('x')`.
+- Use ordinary null comparison: `foo == null` and `foo != null`.
+- `isPresent(value)` is allowed and can be clearer than `value != null`, especially for top-level variables such as `input`.
+- Do not use `isNull()`, `isNil()`, or `isNill()` in new expressions.
+- `nil` is still available as a fallback when a conditional branch must preserve null and ordinary `null` is rejected by conditional type checking.
+- Ordinary property access is null-safe in current MEL: use `focus.fullName`, not `focus.?fullName`.
+- Ordinary method calls are null-safe in current MEL. For example, `input.uc()` returns null when `input == null`, `foo.contains('x')` returns false when `foo == null`, and `foo.size()` returns 0 when `foo == null`.
+- String concatenation with `+` renders null strings as empty strings in current MEL.
 
 String and text normalization policy:
-- Allow casing, whitespace handling, separator changes, substring extraction, prefix/suffix removal, and concatenation only when consistently demonstrated.
+- Allow casing, whitespace handling, separator changes, substring extraction, prefix/suffix removal, regex replacement, and concatenation only when consistently demonstrated.
 - Do not remove accents, punctuation, or internal whitespace unless the examples clearly require it.
 - Do not guess transliteration rules unless they are directly supported by examples.
 - Preserve whitespace exactly when the examples show meaningful whitespace.
 - Do not trim strings by default.
-- For upper-casing, use `.uc()` function.
-- For lower-casing, use `.lc()` function.
-- For normalized form, use `norm()` function.
-- For ASCII-only conversion, use `ascii()` function.
-- For string concatenation or formatting, prefer method-form string formatting with stringified operands: `'%s%s'.format([stringify(a), stringify(b)])`.
-- Avoid `+` for string concatenation when any operand may be null or PolyString.
-- Do not use global `format(...)`.
+- For upper-casing, use `.uc()`.
+- For lower-casing, use `.lc()`.
+- For normalized form, use `norm(value)` or `.norm` for PolyString normalized value when the input is a PolyString.
+- For ASCII-only conversion, use `ascii(value)`.
+- For simple string concatenation, `+` is allowed and handles null strings as empty strings.
+- For template-like formatting, use global `format(pattern, args)` or method-form `pattern.format(args)` when supported by the runtime.
 
 Date and time policy:
 - Infer date/time formatting only when the examples clearly show the same date or time represented in different formats.
-- Do not infer date arithmetic, timezone conversion, age calculation, duration calculation, or offset-based rules unless explicitly demonstrated by multiple examples.
+- Do not infer date arithmetic, timezone conversion, age calculation, duration calculation, timestamp-to-epoch conversion, or offset-based rules unless explicitly demonstrated by multiple examples and directly supported by the MEL reference.
+- MEL does not expose epoch seconds for timestamps. Do not try to compute date differences through `.seconds`, `.getEpochSecond()`, `.epochSecond()`, or `.getSeconds()`.
 - Preserve zero-padding, separators, ordering, and timezone representation exactly as shown.
 - Do not introduce current date/time logic.
 - If the dates in examples are in quotes e.g. `"1990-01-01T00:00:00"`, then treat the corresponding variable as a string type.
-- If the dates in examples are **not in quotes** e.g. `1990-01-01T00:00:00`, then treat the corresponding variable as 
-a timestamp type.
-- **Use** `.formatDateTime()` for formatting timestamps to strings. E.g. `input.formatDateTime('yyyy-MM-dd'T'HH:mm:ss')`.
-- **Use** `.parseDateTime()` for parsing strings to timestamps. E.g. `input.parseDateTime('yyyy-MM-dd'T'HH:mm:ss')`
-- **Never** transform timestamps to strings with the `stringify()` or `str()` functions. Always use `.formatDateTime()`.
+- If the dates in examples are not in quotes e.g. `1990-01-01T00:00:00`, then treat the corresponding variable as a timestamp type.
+- Use `.formatDateTime()` for formatting timestamps to strings. Example: `input.formatDateTime('yyyy-MM-dd\'T\'HH:mm:ss')`.
+- Use `.parseDateTime()` for parsing strings to timestamps. Example: `input.parseDateTime('yyyy-MM-dd\'T\'HH:mm:ss')`.
+- Never transform timestamps to strings with `stringify()` or `str()`. Always use `.formatDateTime()`. Do not generate unsupported timestamp epoch helpers such as `.seconds`, `.getEpochSecond()`, or `.epochSecond()`.
+- `.getSeconds()` is only the seconds component of the minute, usually 0-59. It is not epoch seconds and must not be used for timestamp-to-epoch conversion or date-difference calculations.
 
 Number policy:
 - If the examples show whole-number strings, do not introduce decimal fractions or scientific notation unless clearly required.
@@ -110,7 +113,7 @@ Number policy:
 - Preserve whether the output is a number or a string exactly as shown.
 
 Categorical mapping policy:
-- If the attributes which you are mapping are categorical and all above-mentioned constraints about lookups and category-like attributes are met, use the MEL maps as shown bellow:
+- If the attributes are categorical and all lookup constraints are met, use direct MEL map lookup:
 ```MEL
 {{
 'key1': 'value1',
@@ -124,11 +127,12 @@ For example:
 'inactive': 'disabled'
 }}[input]
 ```
-- **Always** keep the source variable in the `[]` selector. It acts as a selector of a particular value from the map.
-- Use direct map lookup only when the examples cover all meaningful source values for the closed enumeration. If a source value may be missing from the map, abstain instead of relying on optional map lookup.
-- Use the observed values (values of an application attribute) as a keys
-- Use the known enum values (possible values of the categorical midPoint property) as a values.
-- If the constructed map contains a lot of key/value pairs, put each of them on a single line.
+- Always keep the source variable in the `[]` selector. It acts as a selector of a particular value from the map.
+- Never use optional map lookup `[?]`; it is not supported in current MEL.
+- Use direct map lookup only when the examples cover all meaningful source values for the closed enumeration. If a source value may be missing from the map, abstain instead of relying on null fallback.
+- Use the observed source values as keys.
+- Use the target enum values as values.
+- If the constructed map contains many key/value pairs, put each of them on a single line.
 
 Representation fidelity:
 - Preserve the exact output representation shown by the examples.
@@ -147,24 +151,13 @@ Simplicity policy:
 
 Code constraints:
 - MEL is an expression language, not a scripting language. The entire transformation must be a single expression.
-- No statements, declarations, or blocks. Only inline expressions.
+- No statements, declarations, blocks, assignments, `return`, `def`, `var`, `const`, or `let`.
 - Use single-quoted strings: `'hello'`, not `"hello"`.
-- No string interpolation. Use method-form `.format([...])` for string formatting.
-- Use `.?` optional selection operator for nullable property access: `focus.?name` instead of `focus.name`.
-- Never use `.?` before function calls. `input.?contains('#')` is invalid; use `default(input, '').contains('#')` or `isPresent(input) ? input.contains('#') : false`.
-- **Do not use `?.`**, because such operator does not exist in MEL. Always use `.?`.
-- Use `isNull()` and `isPresent()` functions for null checks.
-- Use `default()` function to provide fallback values.
-- Prefer `default()` function in favor of conditionals (ternary operator).
-- If examples require `null -> null` and a non-null input transformation, prefer `isNil(input) ? nil : transformedValue` when the runtime supports `nil`; otherwise abstain if the null-preserving behavior cannot be expressed safely.
-- If the script itself must return null from a conditional branch, use `nil` instead of literal `null` when the runtime supports it.
-- Convert possible PolyString values with `stringify()` before string manipulation, e.g. `stringify(fullName)` or `stringify(givenName.?norm)`.
-- Don't use functions, which are not listed in the MEL reference.
-- Do not use `let()`, `??`, `?.`, `.join()`, `.replaceAll()`, `.replaceFirst()`, global `format(...)`, `return`, `def`, `var`, `const`, assignments, Groovy closures, JavaScript syntax, or JavaScript array methods.
-- Do not use `.join()`: the current midPoint MEL runtime reports it as an undeclared reference.
-- You may use `.split()` with guarded fixed indexes. Avoid arbitrary-length split-map-join pipelines when the result needs to be joined into a string.
-- Use `.map()` and `.filter()` only when the expression does not require `.join()` and remains valid in this runtime.
-- Do not generate regex replacement. `.matches()` is allowed only for boolean tests; replacement must use literal `.replace(search, replacement)` or abstain.
+- No string interpolation.
+- Do not use optional syntax: no `.?`, no `[?]`, no `?.`, and no `??`.
+- Do not use JavaScript syntax such as `x => x`.
+- Do not use Groovy syntax or Java regex methods such as `.replaceAll()` or `.replaceFirst()`.
+- Do not use functions that are not listed in the MEL reference.
 - The expression must evaluate to the result.
 - Do not return an expression whose only logic is `null`; use JSON `null` fields instead.
 - For string outputs containing backslashes or special characters, use proper escaping or concatenation.
@@ -181,22 +174,22 @@ JSON output constraints:
 - Do not return Markdown.
 - Do not wrap the JSON in a code block.
 - Do not include trailing commas.
-- Escape newlines in `transformationScript` as `\\n`.
+- Escape newlines in `transformationScript` as `\n`.
 - Escape double quotes inside the MEL expression.
 - If abstaining, return exactly:
 {{"description": null, "transformationScript": null}}
 
 == MEL Language Reference
 
-MEL is an expression language base on the Google's CEL. MEL supports expression to be multiline, leverage that in 
-more complex expressions.
+MEL is an expression language based on CEL. MEL supports multi-line expressions.
 
 === Literals
 
 - String: `'Hello world!'` (single-quoted)
 - Numeric: `42`, `3.14`
 - Boolean: `true`, `false`
-- Null: `null` as a literal exists, but do not use it as a ternary result branch. Use `nil` in the expression if the runtime supports it; otherwise abstain if null-preserving behavior cannot be expressed safely.
+- Bytes: `b'\x68\x65\x6c\x6c\x6f'`
+- Null: `null`
 - List: `[1, 2, 3]`, `['foo', 'bar']`
 - Map: `{{'one': 'unus', 'two': 'duo'}}`
 - Timestamp: `timestamp('2026-06-15T10:30:45.123Z')`
@@ -207,99 +200,107 @@ more complex expressions.
 - Comparison: `==`, `!=`, `>`, `>=`, `<`, `<=`
 - Arithmetic: `+`, `-`, `*`, `/`, `%`
 - Logical: `!`, `&&`, `||`
-- Conditional: `condition ? valueIfTrue : valueIfFalse`.
-  **Both branches have to return the same data type**. E.g. this will not work `isPresent(input) ? input.contains('#') : null`.
-  The correct expression is `isPresent(input) ? input.contains('#') : false`.
-  **Never** use literal `null` as a return value from the conditional operator branch. Use `nil` if a null value is required and supported; otherwise abstain if null-preserving behavior cannot be expressed safely.
-- Selection: `.` (assumes non-null), `.?` (optional, handles null).
-  - The optional selection is **not** `?.` as in other languages, but `.?` instead.
-  - The optional selection does **not** allow functions invocations. E.g. this will not work `input.?contains('#').
-- Index: `[]` (assumes non-null), `[?]` (optional, handles null)
+- Conditional: `condition ? valueIfTrue : valueIfFalse`
+  - Both branches usually have to return the same practical type.
+  - Use `nil` only when a branch must preserve null and ordinary `null` is rejected by type checking.
+- Selection: `.` for property navigation. It is null-safe in current MEL.
+- Index: `[]` for list and map lookup.
 - Inclusion: `in`
 
-=== Null and Optional Values
+=== Null Handling
 
-- Use `.?` for optional property access: `focus.?activation.?administrativeStatus`.
-- **Do not use** `?.`, because such operator does not exist in MEL.
-- Use `isNull(value)` to check for null: `isNull(foo)`
-- Use `isPresent(value)` to check for presence: `isPresent(foo)`
-- Use `default(value, fallback)` for defaults: `default(foo, 'unknown')`
-- Use `nil` for a null result branch when the runtime supports it: `isNil(input) ? nil : '%s suffix'.format([stringify(input)])`.
+- Use `foo == null` and `foo != null` for null checks.
+- Use `isPresent(value)` when it improves readability or when checking a top-level variable such as `input`.
+- Do not use `isNull()`, `isNil()`, or `isNill()` in new expressions.
+- Do not use optional syntax `.?` or `[?]`; it is unsupported in current MEL.
+- Method calls on null values are safe for common MEL string functions:
+  - `input.uc()` returns null when `input == null`.
+  - `foo.contains('x')` returns false when `foo == null`.
+  - `foo.size()` returns 0 when `foo == null`.
+  - `foo.substring(0, 1)` returns an empty string when `foo == null`.
+- Null string operands render as empty strings for `+` concatenation.
 
-=== Common issues and mistakes
+=== Common Issues And Mistakes
 
-- Calling function right after optional selection. E.g. `input.?contains('#')` will fail. You may use `default` or conditionals instead.
-  E.g. `isPresent(input) ? input.contains('#') : false`, or `default(input, '').contains('#')`.
-- Different data types in conditional operator branches. Following examples are **invalid** and will **fail**:
-  - `isPresent(input) ? true : null)` 
-  - `isPresent(input) ? input.lc() : null)` 
-  - `isNull(input) ? null : input.replace('something to replace', ''))` 
-  - `isNull(input) ? null : '%s-suffix'.format([input])` 
-  Both branches **have to** have the same data type, following examples are correct:
-  - `isPresent(input) ? true : false)` 
-  - `isPresent(input) ? input.lc() : '')` 
-  - `isNull(input) ? '' : input.replace('something to replace', ''))` 
-  - `isNull(input) ? 'Input is null' : '%s-suffix'.format([input])`
-  - `isNil(input) ? nil : '%s suffix'.format([stringify(input)])` if the runtime supports `nil` and null must be preserved.
-  Often times you can avoid the conditional ternary operator altogether, what is also a preferable solution:
-  - `default(input, '').lc()` instead of `isPresent(input) ? input.lc() : ''`
-  - `default(input, '').replace('something to replace', ''))` instead of `isNull(input) ? '' : input.replace('something to replace', ''))`
-  **Never** use literal `null` as a return value of any conditional operator branch.
+- Optional syntax is invalid in current MEL:
+  - Invalid: `focus.?fullName`
+  - Correct: `focus.fullName`
+  - Invalid: `{{'a': 'b'}}[?input]`
+  - Correct: `{{'a': 'b'}}[input]`
+- JavaScript lambda syntax is invalid:
+  - Invalid: `items.map(x => x.uc())`
+  - Correct: `items.map(x, x.uc())`
+- `.replaceAll()` and `.replaceFirst()` are invalid Java/Groovy methods. Use MEL regex functions such as `.reReplace(...)`.
+- Guard string indexing and substring logic when examples include short non-null strings. Null itself is safe, but short strings can still make a requested index impossible.
+- Use nested ternary expressions with explicit parentheses, e.g. `a ? (b ? c : d) : e`.
 
 === String Functions
 
-- `.uc()`: Upper-case entire string. Example: `'hello'.uc()` returns `'HELLO'`
-- `.lc()`: Lower-case entire string. Example: `'HELLO'.lc()` returns `'hello'`
-- `.trim()`: Remove leading/trailing whitespace.
-- `norm(string)`: Normalize string (remove diacritics, lowercase). Example: `norm('Čórtův Hrád')` returns `'cortuv hrad'`
-- `ascii(string)`: Convert to ASCII-only. Example: `ascii('Čórtúv hrad')` returns `'Cortuv hrad'`
-- `.contains(substring)`: Check if contains substring.
+- `.uc()`: Upper-case entire string.
+- `.lc()`: Lower-case entire string.
+- `.upperAscii()`: Upper-case ASCII characters only. Prefer `.uc()` for international text.
+- `.lowerAscii()`: Lower-case ASCII characters only. Prefer `.lc()` for international text.
+- `.capitalize()`: Upper-case the first character.
+- `.reverse()`: Reverse string characters.
+- `.trim()`, `trim(value)`: Remove leading/trailing whitespace.
+- `norm(string)`: Normalize string (remove diacritics, lowercase).
+- `ascii(string)`: Convert to ASCII-only.
+- `.contains(substring)`, `contains(value, substring)`: Check if contains substring.
 - `.containsIgnoreCase(substring)`: Case-insensitive contains check.
+- `.equalsIgnoreCase(other)`, `equalsIgnoreCase(value, other)`: Case-insensitive equality check.
 - `.startsWith(prefix)`: Check if starts with prefix.
 - `.endsWith(suffix)`: Check if ends with suffix.
-- `.substring(beginIndex)`, `.substring(beginIndex, endIndex)`: Extract substring.
+- `.substring(beginIndex)`, `.substring(beginIndex, endIndex)`, `substring(value, beginIndex)`, `substring(value, beginIndex, endIndex)`: Extract substring.
 - `.indexOf(substring)`, `.indexOf(substring, offset)`: Find substring index.
-- `.lastIndexOf(substring)`: Find last occurrence index.
-- `.replace(search, replacement)`: Replace occurrences.
-- `.split(separator)`: Split into list. Example: `'a,b,c'.split(',')` returns `['a', 'b', 'c']`
-- `.size()`: Get string length.
-- `.isEmpty()`: Check if empty.
-- `.isBlank()`: Check if blank (empty or whitespace only).
+- `.lastIndexOf(substring)`, `.lastIndexOf(substring, offset)`: Find last occurrence index.
+- `.replace(search, replacement)`, `.replace(search, replacement, limit)`: Replace literal occurrences. Limit `0` keeps the original string; negative limit replaces all.
+- `.split(separator)`, `.split(separator, limit)`: Split into list. Example: `'a,b,c'.split(',')`.
+- `.size()`, `size(string)`: Get string length.
+- `.isEmpty()`, `isEmpty(string)`: Check if empty or null.
+- `.isBlank()`, `isBlank(string)`: Check if blank (empty or whitespace only).
 - `.charAt(index)`: Get character at index.
 - `.matches(regex)`: Check if matches RE2 regex.
 - `matches(string, regex)`: Global version of matches.
-- `.format(list)`: Format string. Example: `'%s has %d apples'.format(['Jack', 3])` returns `'Jack has 3 apples'`. Use only this method form with stringified nullable/PolyString operands; do not use global `format(...)`.
+- `.reMatches(regex)`: Regex match.
+- `reMatches(string, regex)`: Global regex match.
+- `.reFind(regex)`: Find the first regex match, or null if there is no match.
+- `.reFindAll(regex)`: Find all regex matches. This returns a list, so reduce it to a single value with `.join(separator)` before returning it as the final mapping result.
+- `.reReplace(regex, replacement)`, `.reReplace(regex, replacement, replaceAll)`: Replace regex matches. The optional boolean controls whether to replace all matches (`true`) or only the first match (`false`).
+- `.format(list)`: Format string using a list of arguments.
+- `format(pattern, args)`: Global string formatting function.
 - `str(value)`: Convert to string (nullable).
+- `string(value)`: Convert to string.
 - `stringify(value)`, `stringify(value, default)`: Format as string, always non-null.
 
 === Collection Functions
 
 - `.size()`: Get number of elements.
-- `size(list)`: Global version.
-- `.isEmpty()`: Check if empty.
-- `isEmpty(list)`: Global version.
-- `list(value)`: Convert to list.
-- Do not use `.join()` for now. Some MEL documentation mentions it, but current deployed runtimes report `undeclared reference to 'join'`.
-- `single(list)`: Get single element from single-element list.
-- `.filter(x, predicate)`: Filter list. Example: `items.filter(i, i.size() > 5)`
-- `.map(x, transform)`: Transform list. Example: `items.map(i, i.uc())`
+- `size(list)`, `size(map)`, `size(bytes)`: Global size function for collections and bytes.
+- `isEmpty(list)`: Check if a list is empty.
+- `list(value)`: Convert a scalar to a single-element list; an existing list is returned unchanged.
+- `single(value)`: Return the single element from a single-element list, null for an empty list, or the scalar itself for scalar input. It errors on lists with more than one element.
+- `.join()`, `.join(separator)`: Join list elements into a string. Without a separator, empty string is used. Null elements are skipped.
+- `join(list)`, `join(list, separator)`: Global join forms.
+- `.filter(x, predicate)`: Filter a list or map. Example: `items.filter(i, i.size() > 5)`.
+- `.map(x, transform)`: Transform a list or map. Example: `items.map(i, i.uc())`.
 - `.map(x, predicate, transform)`: Filter and transform combined.
-- `.exists(x, predicate)`: Check if any element matches.
-- `.exists_one(x, predicate)`: Check if exactly one element matches.
-- `.all(x, predicate)`: Check if all elements match.
+- `.exists(x, predicate)`: Check if any list element or map key matches.
+- `.exists_one(x, predicate)`: Check if exactly one list element or map key matches.
+- `.all(x, predicate)`: Check if all list elements or map keys match.
+- Use `.map()` and `.filter()` only as intermediate operations when the final expression returns a single scalar value, such as a string, boolean, or number.
 
-=== Date and Time Functions
+=== Date And Time Functions
 
 - `timestamp(string)`: Create timestamp from ISO8601/RFC3339 string.
-- `duration(string)`: Create duration (e.g., `'1h30m'`, `'-300ms'`).
-- `.strftime(format)`: Format timestamp using POSIX format. Example: `ts.strftime('%d/%m/%Y %H:%M:%S')`
+- `duration(string)`: Create duration, e.g. `'1h30m'`, `'-300ms'`.
+- `.strftime(format)`: Format timestamp using POSIX format.
 - `.strptime(format)`: Parse string to timestamp.
 - `.formatDateTime(format)`: Format using Java SimpleDateFormat notation. Available on timestamp type.
 - `.parseDateTime(format)`: Parse using Java SimpleDateFormat notation. Available on string type.
 - `.getDate()`, `.getDate(timezone)`: Get day of month (1-based).
 - `.getMonth()`: Get month (0-based, January = 0).
 - `.getFullYear()`: Get year.
-- `.getHours()`, `.getMinutes()`, `.getSeconds()`, `.getMilliseconds()`: Get time components.
+- `.getHours()`, `.getMinutes()`, `.getSeconds()`, `.getMilliseconds()`: Get time components. `.getSeconds()` returns only the second-of-minute component, not epoch seconds.
 - `.getDayOfWeek()`: Get day of week (0 = Sunday).
 - `.getDayOfYear()`: Get day of year (0-based).
 - `.atStartOfDay()`, `.atEndOfDay()`: Get start/end of day.
@@ -315,15 +316,42 @@ more complex expressions.
 - `.parseHonorificPrefix()`: Extract honorific prefix.
 - `.parseHonorificSuffix()`: Extract honorific suffix.
 
-=== Other Functions
+=== Object And Other Functions
 
-- `default(any, defaultValue)`: Return default value if provided first parameter is null (or equivalent).
+- `default(any, defaultValue)`: Return default value if the first parameter is null or equivalent.
 - `debugDump(value)`: Human-readable dump of complex data.
-- `has(variable.item)`: Check if item exists in structured data (use `isPresent()` instead for null-safety).
+- `has(variable.item)`: Check if item exists in structured data. Prefer `isPresent(value)` for top-level variables and null-safety.
+- `.findItem(path)`: Find an item by path in a structured object, e.g. `focus.findItem('activation/administrativeStatus')`.
 - `qname(localPart)`, `qname(namespace, localPart)`: Create QName.
 - `.encrypt()`: Encrypt string to protected string.
 - `.decrypt()`: Decrypt protected string.
 - `log.info(format, args)`, `log.debug(...)`, `log.warn(...)`, `log.error(...)`, `log.trace(...)`: Logging functions.
+
+=== Current MEL Runtime Guidance
+
+- Optional navigation syntax is not supported. Use `focus.fullName`, not `focus.?fullName`; use `{{'Active': 'active'}}[input]`, not `{{'Active': 'active'}}[?input]`.
+- Ordinary property navigation and common method calls are null-safe in current MEL.
+- Method `.join()` and global `join(list, separator)` are available for list-to-string conversion. Use them only when the final mapping output is a single string.
+- Global `format(pattern, args)` is available, but prefer `+` for simple concatenation unless formatting is clearer.
+- Regex replacement is available through method form `.reReplace(regex, replacement)` and `.reReplace(regex, replacement, replaceAll)`; do not use Java/Groovy `.replaceAll()` or `.replaceFirst()`.
+- Regex helpers available now: `.reMatches(regex)`, `reMatches(string, regex)`, `.reFind(regex)`, `.reFindAll(regex)`, `.reReplace(regex, replacement)`, and `.reReplace(regex, replacement, replaceAll)`.
+- Object path lookup is member form `.findItem(path)`, e.g. `focus.findItem(path)`, not `.find(path)`.
+- `.split()`, `.map()`, and `.filter()` may be used as intermediate operations, but the final expression must still return a single mapping value.
+- Epoch seconds are not available in current MEL. If a transformation requires Unix epoch seconds, epoch minutes, Windows filetime-like values, or date differences based on epoch arithmetic, abstain instead of inventing `.seconds`, `.getEpochSecond()`, `.epochSecond()`, or misusing `.getSeconds()`.
+- Use nested ternary expressions with explicit parentheses, e.g. `a ? (b ? c : d) : e`.
+- Do not use `let()`, `return`, `def`, `var`, `const`, assignments, Groovy closures, JavaScript syntax, or JavaScript array methods.
+- Escape backslashes carefully inside JSON and MEL strings. The MEL expression must remain valid after JSON unescaping.
+
+Useful current patterns:
+- Direct nullable property access: `focus.fullName`
+- Null check: `input == null ? nil : input.uc()`
+- Readable presence check: `isPresent(input) ? input.uc() : nil`
+- Null-safe contains: `input.contains('x')`
+- Null-safe username prefix: `givenName.norm.substring(0, 1) + familyName.norm.substring(0, 7)`
+- Categorical enum lookup: `{{'Active': 'active', 'Former employee': 'archived'}}[input]`
+- List join after split/map: `input.split(',').map(x, x.trim().lc()).join(';')`
+- Regex digit removal: `input.reReplace('[0-9]', '')`
+- Regex digit extraction: `input.reFindAll('[0-9]').join('')`
 """.strip()
 
 suggest_mapping_human_prompt = """
@@ -341,7 +369,7 @@ When fixing a previous script:
 {data_samples}
 
 Return exactly one JSON object and nothing else:
-- Either {{"description": "...", "transformationScript": "// ...\\n..."}}
+- Either {{"description": "...", "transformationScript": "// ...\n..."}}
 - Or {{"description": null, "transformationScript": null}}
 
 Rules:
@@ -360,21 +388,25 @@ Rules:
 - Do not abstain just because one or two examples are obvious outliers; follow the majority rule when it is structurally consistent.
 - If fewer than 3 meaningful examples support the rule, abstain unless the rule is a trivial structural transformation.
 - Prefer the simplest deterministic transformation using the fewest variables.
-- Use `.?` for optional property access on nullable structured values.
-- Never use `.?` immediately before a function call. For nullable strings, use `default(value, '').contains('x')` or `isPresent(value) ? value.contains('x') : false`.
-- Use `isNull()` and `isPresent()` for null checks.
-- **Never** use literal `null` as a return value from the conditional operator branch. Use `nil` when the runtime supports it; otherwise abstain if null-preserving behavior cannot be expressed safely.
-- Use `default()` for fallback values.
-- Use method-form string formatting `'%s'.format([stringify(value)])` instead of string interpolation or `+` with variables. Do not use global `format(...)`.
-- Use single-quoted strings.
-- Convert possible PolyString values with `stringify()` before `.substring()`, `.replace()`, `.contains()`, `.trim()`, or concatenation.
-- Do not use `let()`, `??`, `?.`, `.join()`, `.replaceAll()`, `.replaceFirst()`, global `format(...)`, `return`, `def`, assignments, Groovy syntax, or JavaScript syntax.
-- You may use `.split()` with guarded fixed indexes. Avoid arbitrary-length split-map-join pipelines when the result needs to be joined into a string.
-- Use `.map()` and `.filter()` only when the expression does not require `.join()` and remains valid in this runtime.
-- Do not generate regex replacement. `.matches()` is allowed only for boolean tests; replacement must use literal `.replace(search, replacement)` or abstain.
+- Use ordinary null-safe property access, e.g. `focus.fullName`, not `focus.?fullName`.
+- Use ordinary null checks: `value == null`, `value != null`, or `isPresent(value)`.
+- Do not use `isNull()`, `isNil()`, or `isNill()` in new expressions.
+- Use `nil` only when a conditional branch must preserve null and ordinary `null` is rejected by type checking.
+- You may call common string functions on nullable values; current MEL handles nulls safely.
+- You may use `+` for simple string concatenation; null strings render as empty strings.
+- Do not use `.?`, `[?]`, `?.`, `??`, `let()`, `.replaceAll()`, `.replaceFirst()`, `return`, `def`, assignments, Groovy syntax, or JavaScript syntax.
+- For categorical maps, use direct lookup such as `{{'Active': 'active'}}[input]`; never use `[?input]`.
+- You may use `.split()` with guarded fixed indexes.
+- You may use `.join()` or `join(list, separator)` when list values are reduced to one final string.
+- Use `.map()` and `.filter()` only as intermediate operations when the final expression returns a single value, such as a boolean, number, or string. Do not return a list or multi-valued expression.
+- Use regex functions only when the examples clearly require regex behavior: `.reMatches(...)`, `reMatches(...)`, `.reFind(...)`, `.reFindAll(...)`, `.reReplace(...)`.
+- For regex replacement, use `.reReplace(regex, replacement)` or `.reReplace(regex, replacement, replaceAll)`, not `.replaceAll()` or `.replaceFirst()`.
+- Use `.replace(search, replacement)` for literal replacement.
+- Use member form `.findItem(path)`, e.g. `focus.findItem(path)`, not `.find(path)`.
 - Escape backslashes so the MEL expression remains valid after JSON unescaping.
-- Before using `.substring(...)`, `.charAt(...)`, or indexed split access like `x.split(';')[1]`, guard that the string/list has the required length; otherwise abstain.
-- If expected outputs are whole-number strings with a `.0` suffix, preserve that suffix exactly.
+- Before using `.substring(...)`, `.charAt(...)`, or indexed split access like `x.split(';')[1]`, guard that non-null short strings/lists have the required length; otherwise abstain.
+- Use single-quoted strings.
+- If expected outputs are whole-number strings with a `.0` suffix, preserve that suffix exactly. Do not generate unsupported timestamp epoch helpers such as `.seconds`, `.getEpochSecond()`, or `.epochSecond()`. Do not use `.getSeconds()` for epoch conversion or date-difference calculations; it is only the second-of-minute component.
 - Ensure the MEL expression remains syntactically valid after JSON unescaping.
 - Ensure the first line of `transformationScript` is exactly `// ` followed by the same text as `description`.
 """.strip()
