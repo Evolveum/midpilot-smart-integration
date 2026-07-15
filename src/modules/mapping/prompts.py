@@ -95,14 +95,14 @@ String and text normalization policy:
 Date and time policy:
 - Infer date/time formatting only when the examples clearly show the same date or time represented in different formats.
 - Do not infer date arithmetic, timezone conversion, age calculation, duration calculation, timestamp-to-epoch conversion, or offset-based rules unless explicitly demonstrated by multiple examples and directly supported by the MEL reference.
-- MEL does not expose epoch seconds for timestamps. Do not try to compute date differences through `.seconds`, `.getEpochSecond()`, `.epochSecond()`, or `.getSeconds()`.
+- MEL exposes Unix epoch seconds for timestamps through `int(timestampValue)`. Use this only when examples clearly require epoch seconds, epoch minutes, or an epoch-based numeric value.
 - Preserve zero-padding, separators, ordering, and timezone representation exactly as shown.
 - Do not introduce current date/time logic.
 - If the dates in examples are in quotes e.g. `"1990-01-01T00:00:00"`, then treat the corresponding variable as a string type.
 - If the dates in examples are not in quotes e.g. `1990-01-01T00:00:00`, then treat the corresponding variable as a timestamp type.
 - Use `.formatDateTime()` for formatting timestamps to strings. Example: `input.formatDateTime('yyyy-MM-dd\'T\'HH:mm:ss')`.
 - Use `.parseDateTime()` for parsing strings to timestamps. Example: `input.parseDateTime('yyyy-MM-dd\'T\'HH:mm:ss')`.
-- Never transform timestamps to strings with `stringify()` or `str()`. Always use `.formatDateTime()`. Do not generate unsupported timestamp epoch helpers such as `.seconds`, `.getEpochSecond()`, or `.epochSecond()`.
+- Never transform timestamps to strings with `stringify()` or `str()`. Always use `.formatDateTime()`. For epoch seconds use `int(timestampValue)`. Do not generate unsupported timestamp epoch helpers such as `.seconds`, `.getEpochSecond()`, or `.epochSecond()`.
 - `.getSeconds()` is only the seconds component of the minute, usually 0-59. It is not epoch seconds and must not be used for timestamp-to-epoch conversion or date-difference calculations.
 
 Number policy:
@@ -292,6 +292,7 @@ MEL is an expression language based on CEL. MEL supports multi-line expressions.
 === Date And Time Functions
 
 - `timestamp(string)`: Create timestamp from ISO8601/RFC3339 string.
+- `int(timestampValue)`: Convert a timestamp to Unix epoch seconds.
 - `duration(string)`: Create duration, e.g. `'1h30m'`, `'-300ms'`.
 - `.strftime(format)`: Format timestamp using POSIX format.
 - `.strptime(format)`: Parse string to timestamp.
@@ -337,7 +338,8 @@ MEL is an expression language based on CEL. MEL supports multi-line expressions.
 - Regex helpers available now: `.reMatches(regex)`, `reMatches(string, regex)`, `.reFind(regex)`, `.reFindAll(regex)`, `.reReplace(regex, replacement)`, and `.reReplace(regex, replacement, replaceAll)`.
 - Object path lookup is member form `.findItem(path)`, e.g. `focus.findItem(path)`, not `.find(path)`.
 - `.split()`, `.map()`, and `.filter()` may be used as intermediate operations, but the final expression must still return a single mapping value.
-- Epoch seconds are not available in current MEL. If a transformation requires Unix epoch seconds, epoch minutes, Windows filetime-like values, or date differences based on epoch arithmetic, abstain instead of inventing `.seconds`, `.getEpochSecond()`, `.epochSecond()`, or misusing `.getSeconds()`.
+- Epoch seconds are available as `int(timestampValue)`. For ISO/RFC3339 strings with timezone, use `int(timestamp(value))`. For timestamp-like strings without timezone that examples treat as UTC, append `'Z'` before conversion, e.g. `int(timestamp(validTo + 'Z'))`.
+- Do not invent `.seconds`, `.getEpochSecond()`, `.epochSecond()`, or misuse `.getSeconds()` for epoch conversion.
 - Use nested ternary expressions with explicit parentheses, e.g. `a ? (b ? c : d) : e`.
 - Do not use `let()`, `return`, `def`, `var`, `const`, assignments, Groovy closures, JavaScript syntax, or JavaScript array methods.
 - Escape backslashes carefully inside JSON and MEL strings. The MEL expression must remain valid after JSON unescaping.
@@ -352,6 +354,8 @@ Useful current patterns:
 - List join after split/map: `input.split(',').map(x, x.trim().lc()).join(';')`
 - Regex digit removal: `input.reReplace('[0-9]', '')`
 - Regex digit extraction: `input.reFindAll('[0-9]').join('')`
+- Epoch minutes from UTC-like local string: `int(timestamp(validTo + 'Z')) / 60`
+- Epoch-based `.0` string: `string(11644473600000 + int(timestamp(validTo))) + '.0'`
 """.strip()
 
 suggest_mapping_human_prompt = """
@@ -406,7 +410,7 @@ Rules:
 - Escape backslashes so the MEL expression remains valid after JSON unescaping.
 - Before using `.substring(...)`, `.charAt(...)`, or indexed split access like `x.split(';')[1]`, guard that non-null short strings/lists have the required length; otherwise abstain.
 - Use single-quoted strings.
-- If expected outputs are whole-number strings with a `.0` suffix, preserve that suffix exactly. Do not generate unsupported timestamp epoch helpers such as `.seconds`, `.getEpochSecond()`, or `.epochSecond()`. Do not use `.getSeconds()` for epoch conversion or date-difference calculations; it is only the second-of-minute component.
+- If expected outputs are whole-number strings with a `.0` suffix, preserve that suffix exactly. For epoch seconds use `int(timestampValue)`. Do not generate unsupported timestamp epoch helpers such as `.seconds`, `.getEpochSecond()`, or `.epochSecond()`. Do not use `.getSeconds()` for epoch conversion or date-difference calculations; it is only the second-of-minute component.
 - Ensure the MEL expression remains syntactically valid after JSON unescaping.
 - Ensure the first line of `transformationScript` is exactly `// ` followed by the same text as `description`.
 """.strip()

@@ -20,8 +20,9 @@ midPoint enum string value.
 2. If an application value cannot be confidently mapped to any midPoint enum value, omit it.
 3. **If no meaningful mapping is possible** between the application values and midPoint enum values (e.g., the application values are completely unrelated to the midPoint enum semantics), return `null` for the `transformationScript` field.
 4. Use MEL maps as described in "MEL mapping expressions" section bellow to create a switch-like expression.
-5. The input variable is always named `input` and it should be used as a "selector" of a value from constructed map. 
-   It should be used literally in the `[?]` right after the map declaration `{{}}`.
+5. The input variable is always named `input` and it should be used as a "selector" of a value from constructed map.
+   It should be used literally in the `[]` right after the map declaration `{{}}`, as `[input]`.
+   Do not use optional map lookup `[?input]`; current MEL does not support optional syntax.
 6. MEL supports multiline expressions. If the constructed map contains a lot of key/value pairs, put each of them on 
    a single line.
 7. The expression must start with exactly one single-line MEL comment describing the transformation (e.g. `// Map status values to activation/administrativeStatus`). No other comments are allowed. Do not use path prefixes (e.g. c:, ri:) in description.
@@ -33,17 +34,18 @@ In MEL, the expression which maps keys to values (similarly as `switch/case` in 
 {{
   'key1': 'value1',
   'key2': 'value2'
-}}[?input]
+}}[input]
 ```
 For example:
 ```MEL
 {{
   'active': 'enabled',
   'inactive': 'disabled'
-}}[?input]
+}}[input]
 ```
 
-- **Always** keep the `input` in the `[?]`, that means `[?input]`. It acts as a selector of a particular value from the map.
+- **Always** keep the `input` in the `[]`, that means `[input]`. It acts as a selector of a particular value from the map.
+- Never use `[?input]`, `[?]`, `.?`, `?.`, or `??`.
 - Use the observed values (values of an application attribute) as a keys
 - Use the known enum values (possible values of the categorical midPoint property) as a values.
 

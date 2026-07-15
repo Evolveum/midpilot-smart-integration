@@ -15,6 +15,7 @@ from src.modules.categorical_mapping.service import (
     build_prompt_data,
     suggest_categorical_mapping_script,
 )
+from src.modules.categorical_mapping.prompts import suggest_categorical_mapping_system_prompt
 from test.unit.modules.utils import response_mock
 
 APP_ATTR = BaseSchemaAttribute(name="ri:status", type="xsd:string", minOccurs=0, maxOccurs=1)
@@ -23,6 +24,17 @@ MP_ENUM = ["enabled", "disabled", "archived"]
 
 
 # ---- build_prompt_data tests (deterministic) ----
+
+
+def test_categorical_prompt_uses_current_map_lookup_syntax():
+    prompt = suggest_categorical_mapping_system_prompt
+    assert "}}[input]" in prompt
+    assert "Always" in prompt and "[input]" in prompt
+    assert "Do not use optional map lookup `[?input]`" in prompt
+    assert "Never use `[?input]`" in prompt
+    assert "}}[?input]" not in prompt
+    assert "that means `[?input]`" not in prompt
+    assert "used literally in the `[?]`" not in prompt
 
 
 def test_build_prompt_data_app_enum_values():
