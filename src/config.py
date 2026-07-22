@@ -99,9 +99,9 @@ class AppSettings(BaseModel):
     :param version: API version string.
     :param description: API description displayed in docs.
     :param api_base_url: Base path for all routes.
-    :param host: Host address for Uvicorn server.
-    :param port: Port number for Uvicorn server.
-    :param live_reload: Enable Uvicorn live reload on changes.
+    :param host: Host address for Hypercorn server.
+    :param port: Port number for Hypercorn server.
+    :param live_reload: Enable Hypercorn live reload on changes.
     :param workers: Number of worker processes.
     :param proxy_headers: Trust proxy headers.
     :param forwarded_allow_ips: IPs allowed to be forwarded.

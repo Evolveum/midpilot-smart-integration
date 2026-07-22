@@ -7,6 +7,7 @@ from unittest.mock import patch
 import pytest
 
 from src.common.schema import BaseSchemaAttribute
+from src.modules.categorical_mapping.prompts import suggest_categorical_mapping_system_prompt
 from src.modules.categorical_mapping.schema import (
     SuggestCategoricalMappingRequest,
     SuggestCategoricalMappingResponse,
@@ -15,7 +16,6 @@ from src.modules.categorical_mapping.service import (
     build_prompt_data,
     suggest_categorical_mapping_script,
 )
-from src.modules.categorical_mapping.prompts import suggest_categorical_mapping_system_prompt
 from test.unit.modules.utils import response_mock
 
 APP_ATTR = BaseSchemaAttribute(name="ri:status", type="xsd:string", minOccurs=0, maxOccurs=1)

@@ -2,8 +2,12 @@
 #
 # Licensed under the EUPL-1.2 or later.
 
-import uvicorn
+import asyncio
 
+from hypercorn.asyncio import serve
+from hypercorn.config import Config
+
+from src.app import api
 from src.common.logger import setup_logging
 from src.config import config
 
@@ -11,24 +15,25 @@ setup_logging()
 
 
 def run_application():
-    uvicorn.run(
-        "src.app:api",
-        host=config.app.host,
-        port=config.app.port,
-        reload=config.app.live_reload,
-        workers=config.app.workers,
-        proxy_headers=config.app.proxy_headers,
-        forwarded_allow_ips=config.app.forwarded_allow_ips,
-        root_path=config.app.root_path,
-        timeout_keep_alive=config.app.timeout_keep_alive,
-        timeout_graceful_shutdown=config.app.timeout_graceful_shutdown,
-        limit_concurrency=config.app.limit_concurrency,
-        limit_max_requests=config.app.limit_max_requests,
-        ssl_certfile=config.app.ssl_certfile,
-        ssl_keyfile=config.app.ssl_keyfile,
-        access_log=config.logging.access_log,
-        log_level=config.logging.level.value,
-    )
+    hypercorn_config = Config()
+    hypercorn_config.bind = [f"{config.app.host}:{config.app.port}"]
+    hypercorn_config.workers = config.app.workers
+    hypercorn_config.root_path = config.app.root_path
+    hypercorn_config.keep_alive_timeout = config.app.timeout_keep_alive
+    hypercorn_config.graceful_timeout = config.app.timeout_graceful_shutdown
+    hypercorn_config.use_reloader = config.app.live_reload
+
+    if config.app.ssl_certfile and config.app.ssl_keyfile:
+        hypercorn_config.certfile = config.app.ssl_certfile
+        hypercorn_config.keyfile = config.app.ssl_keyfile
+
+    hypercorn_config.accesslog = "-" if config.logging.access_log else None
+    hypercorn_config.loglevel = config.logging.level.value.upper()
+
+    if config.app.limit_max_requests:
+        hypercorn_config.max_requests = config.app.limit_max_requests
+
+    asyncio.run(serve(api, hypercorn_config))
 
 
 if __name__ == "__main__":
