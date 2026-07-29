@@ -3,7 +3,6 @@
 # Licensed under the EUPL-1.2 or later.
 
 import logging
-import re
 
 from langchain.schema.output_parser import OutputParserException
 from langchain_core.output_parsers import PydanticOutputParser
@@ -12,7 +11,7 @@ from src.common.llm import get_default_llm, make_basic_chain
 
 from ...common.errors import LLMResponseValidationException
 from ...common.langfuse import langfuse_handler
-from ...utils import normalize_attr_name_for_mel, quote_by_type
+from ...utils import is_null_script, normalize_attr_name_for_mel, quote_by_type
 from .prompts import suggest_mapping_prompt
 from .schema import BaseSchemaAttribute, SuggestMappingRequest, SuggestMappingResponse, ValueExample
 
@@ -99,14 +98,6 @@ def build_prompt_data(req: SuggestMappingRequest) -> str:
         lines.append(f"{source_literal} -> {target_literal}")
 
     return "\n".join(lines)
-
-
-def is_null_script(script):
-    if script is None:
-        return True
-    normalized = re.sub(r"//.*", "", script)
-    normalized = normalized.strip()
-    return not normalized or normalized == "null" or normalized == "return null"
 
 
 async def suggest_mapping_script(req: SuggestMappingRequest) -> SuggestMappingResponse:

@@ -5,31 +5,37 @@
 from langchain_core.prompts import ChatPromptTemplate
 
 suggest_categorical_mapping_system_prompt = """
-You generate a MEL value-mapping expression for identity management.
+You generate a MEL value-mapping expression for identity-management categorical mappings.
 
 You are given:
-1. The OBSERVED VALUES of an application attribute — a list of distinct values.
-2. The KNOWN ENUM VALUES of a midPoint categorical attribute (e.g. activation/administrativeStatus). **These are the final, exact values — use them as-is without any transformations or safety checks.**
+1. The observed values of an application attribute: a list of distinct source values.
+2. The known enum values of a midPoint categorical attribute, e.g. activation/administrativeStatus.
 
-Your task is to produce a MEL expression that maps each observed application value to the most semantically appropriate 
-midPoint enum string value.
+The observed application values and known midPoint enum values are the source of truth.
 
-#### Rules
+If no clear deterministic categorical mapping exists, abstain by returning:
+{{"description": null, "transformationScript": null}}
 
-1. For each application value, determine the best matching midPoint enum value based on semantic similarity (e.g. "1"/"true"/"active"/"enabled" → "enabled"; "0"/"false"/"inactive"/"disabled" → "disabled"; "deleted"/"archived" → "archived").
-2. If an application value cannot be confidently mapped to any midPoint enum value, omit it.
-3. **If no meaningful mapping is possible** between the application values and midPoint enum values (e.g., the application values are completely unrelated to the midPoint enum semantics), return `null` for the `transformationScript` field.
-4. Use MEL maps as described in "MEL mapping expressions" section bellow to create a switch-like expression.
-5. The input variable is always named `input` and it should be used as a "selector" of a value from constructed map.
-   It should be used literally in the `[]` right after the map declaration `{{}}`, as `[input]`.
-   Do not use optional map lookup `[?input]`; current MEL does not support optional syntax.
-6. MEL supports multiline expressions. If the constructed map contains a lot of key/value pairs, put each of them on 
-   a single line.
-7. The expression must start with exactly one single-line MEL comment describing the transformation (e.g. `// Map status values to activation/administrativeStatus`). No other comments are allowed. Do not use path prefixes (e.g. c:, ri:) in description.
+Input model:
+- The input variable is always named `input`.
+- Use `input` literally as the map selector: `{{'source': 'target'}}[input]`.
+- Do not invent, rename, or alias variables.
+- Do not use `input.*`, `context[...]`, optional syntax, maps pretending to be input, or any undeclared variables.
 
-#### MEL mapping expressions
+Core inference policy:
+- Infer only mappings clearly supported by semantic equivalence between source category values and known midPoint enum values.
+- Use only the known midPoint enum values as outputs, exactly as provided.
+- Do not transform, normalize, lowercase, uppercase, sort, or rewrite the known midPoint enum values.
+- Use the observed application values as keys, exactly as provided.
+- Map every meaningful observed application value. If any meaningful observed value cannot be confidently mapped to a known enum value, abstain.
+- If observed application values are empty or no meaningful mapping is possible, abstain.
+- Do not map unrelated categories to midPoint enums by guessing.
+- Do not create partial maps and rely on missing-key null fallback.
+- Do not invent extra target values, aliases, safety checks, or default/fallback branches.
+- Prefer the simplest direct lookup that covers the closed categorical enumeration.
 
-In MEL, the expression which maps keys to values (similarly as `switch/case` in other languages) can be constructed as follows:
+Lookup policy:
+- Use direct MEL map lookup:
 ```MEL
 {{
   'key1': 'value1',
@@ -43,30 +49,53 @@ For example:
   'inactive': 'disabled'
 }}[input]
 ```
-
-- **Always** keep the `input` in the `[]`, that means `[input]`. It acts as a selector of a particular value from the map.
+- Always keep `input` in the `[]` selector.
+- Never use optional map lookup `[?]`; it is not supported in current MEL.
 - Never use `[?input]`, `[?]`, `.?`, `?.`, or `??`.
-- Use the observed values (values of an application attribute) as a keys
-- Use the known enum values (possible values of the categorical midPoint property) as a values.
+- If the constructed map contains many key/value pairs, put each key/value pair on a single line.
+
+Code constraints:
+- MEL is an expression language, not a scripting language. The entire transformation must be a single expression.
+- No statements, declarations, blocks, assignments, `return`, `def`, `var`, `const`, or `let`.
+- Use single-quoted strings: `'hello'`, not `"hello"`.
+- No string interpolation.
+- Do not use optional syntax: no `.?`, no `[?]`, no `?.`, and no `??`.
+- Do not use JavaScript syntax such as `x => x`.
+- Do not use Groovy syntax.
+- The expression must evaluate to the result.
+- Do not return an expression whose only logic is `null`; use JSON `null` fields instead.
+- If `transformationScript` is not `null`, its first line must be exactly one single-line comment matching `description` prefixed with `// `.
+
+Description policy:
+- The description must be a short factual summary of the inferred transformation.
+- The description must describe the rule, not implementation details.
+- Do not mention uncertainty, examples, validation, prompts, or internal reasoning in the description.
+- Do not use path prefixes such as `c:` or `ri:` in the description.
+- The first line of the MEL expression must be exactly `// ` followed by the same description string.
 
 #### Output format (MANDATORY)
 {format_instructions}
 
-Return **exactly one JSON object** with this shape (escape newlines as `\\n` inside the string):
+Return exactly one valid JSON object and nothing else.
+Do not return Markdown.
+Do not wrap the JSON in a code block.
+Do not include trailing commas.
+Escape newlines in `transformationScript` as `\\n`.
+Escape double quotes inside the MEL expression.
+
+Either:
 
 {{
   "description": "One-line description",
   "transformationScript": "// <same-one-line-description>\\n<MEL code>"
 }}
 
-**If no mapping is possible**, return:
+Or:
 
 {{
-  "description": "No meaningful mapping possible",
+  "description": null,
   "transformationScript": null
 }}
-
-**Do not** include Markdown/code fences, language tags, XML/HTML tags, extra keys, or surrounding text. The JSON must be syntactically valid.
 """.strip()
 
 suggest_categorical_mapping_human_prompt = """

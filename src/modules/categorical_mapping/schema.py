@@ -55,9 +55,9 @@ class SuggestCategoricalMappingResponse(BaseModel):
     Shares the same shape as SuggestMappingResponse / SiSuggestMappingResponseType.
     """
 
-    description: str = Field(
-        ...,
-        description="One-line description of the transformation. MUST match the first-line comment (after '// ') in transformationScript.",
+    description: str | None = Field(
+        None,
+        description="One-line description of the transformation, or null when abstaining. MUST match the first-line comment (after '// ') in transformationScript when a script is present.",
     )
     transformationScript: str | None = Field(
         None,

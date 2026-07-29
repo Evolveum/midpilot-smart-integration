@@ -7,6 +7,7 @@ from unittest.mock import patch
 import pytest
 
 from src.common.schema import BaseSchemaAttribute
+from src.modules.categorical_mapping.prompts import suggest_categorical_mapping_system_prompt
 from src.modules.categorical_mapping.schema import (
     SuggestCategoricalMappingRequest,
     SuggestCategoricalMappingResponse,
@@ -15,7 +16,6 @@ from src.modules.categorical_mapping.service import (
     build_prompt_data,
     suggest_categorical_mapping_script,
 )
-from src.modules.categorical_mapping.prompts import suggest_categorical_mapping_system_prompt
 from test.unit.modules.utils import response_mock
 
 APP_ATTR = BaseSchemaAttribute(name="ri:status", type="xsd:string", minOccurs=0, maxOccurs=1)
@@ -30,11 +30,27 @@ def test_categorical_prompt_uses_current_map_lookup_syntax():
     prompt = suggest_categorical_mapping_system_prompt
     assert "}}[input]" in prompt
     assert "Always" in prompt and "[input]" in prompt
-    assert "Do not use optional map lookup `[?input]`" in prompt
+    assert "Never use optional map lookup `[?]`" in prompt
     assert "Never use `[?input]`" in prompt
     assert "}}[?input]" not in prompt
     assert "that means `[?input]`" not in prompt
     assert "used literally in the `[?]`" not in prompt
+
+
+def test_categorical_prompt_uses_mapping_abstain_shape():
+    prompt = suggest_categorical_mapping_system_prompt
+    assert '{"description": null, "transformationScript": null}' in prompt
+    assert '"description": null' in prompt
+    assert '"description": "No meaningful mapping possible"' not in prompt
+
+
+def test_categorical_prompt_disallows_partial_maps_and_script_syntax():
+    prompt = suggest_categorical_mapping_system_prompt
+    assert "Do not create partial maps" in prompt
+    assert "No statements, declarations, blocks" in prompt
+    assert "Use single-quoted strings" in prompt
+    assert "Do not use `input.*`" in prompt
+    assert "`context[...]`" in prompt
 
 
 def test_build_prompt_data_app_enum_values():
@@ -114,7 +130,7 @@ def test_build_prompt_data_lockout_status():
 @patch(
     "src.modules.categorical_mapping.service.get_default_llm",
     response_mock(
-        '{"description":"Map status to administrativeStatus","transformationScript":"// Map status to administrativeStatus\\nif (input == null) return null\\ninput.equalsIgnoreCase(\\"active\\") ? \\"enabled\\" : input.equalsIgnoreCase(\\"inactive\\") ? \\"disabled\\" : null"}'
+        '{"description":"Map status values to administrativeStatus","transformationScript":"// Map status values to administrativeStatus\\n{{\\n  \'active\': \'enabled\',\\n  \'inactive\': \'disabled\'\\n}}[input]"}'
     ),
 )
 async def test_suggest_categorical_mapping_script_smoke(monkeypatch):
@@ -128,5 +144,22 @@ async def test_suggest_categorical_mapping_script_smoke(monkeypatch):
     )
     resp = await suggest_categorical_mapping_script(req)
     assert isinstance(resp, SuggestCategoricalMappingResponse)
-    assert resp.description == "Map status to administrativeStatus"
+    assert resp.description == "Map status values to administrativeStatus"
     assert resp.transformationScript is not None
+
+
+@pytest.mark.asyncio
+@patch(
+    "src.modules.categorical_mapping.service.get_default_llm",
+    response_mock('{"description":"No meaningful mapping possible","transformationScript":null}'),
+)
+async def test_suggest_categorical_mapping_script_normalizes_abstain_response(monkeypatch):
+    req = SuggestCategoricalMappingRequest(
+        applicationAttribute=BaseSchemaAttribute(name="ri:departmentCode", type="xsd:string", minOccurs=0, maxOccurs=1),
+        midPointAttribute=MP_ATTR,
+        inbound=True,
+        applicationAttributeValue=["DEPT-001", "DEPT-002"],
+        midPointCategoryValue=MP_ENUM,
+    )
+    resp = await suggest_categorical_mapping_script(req)
+    assert resp == SuggestCategoricalMappingResponse(description=None, transformationScript=None)
