@@ -69,7 +69,7 @@ Code constraints:
 Description policy:
 - The description must be a short factual summary of the inferred transformation.
 - The description must describe the rule, not implementation details.
-- Do not mention uncertainty, examples, validation, prompts, or internal reasoning in the description.
+- Do not mention uncertainty, examples, checking, prompts, or internal reasoning in the description.
 - Do not use path prefixes such as `c:` or `ri:` in the description.
 - The first line of the MEL expression must be exactly `// ` followed by the same description string.
 

@@ -10,7 +10,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from ...common.schema import BaseSchemaAttribute
 
 
-# Allowed simple xsd types for clarity / validation
+# Allowed simple xsd types for clarity and request checks
 class SupportedDataType(str, Enum):
     XSD_STRING = "xsd:string"
     XSD_BOOLEAN = "xsd:boolean"
@@ -70,7 +70,7 @@ class SuggestMappingRequest(BaseModel):
     errorLog: Optional[str] = Field(
         default=None,
         alias="errorLog",
-        description="Optional backend validation error log from a previous attempt; when present, the LLM will use it to correct its output.",
+        description="Optional runtime error log from a previous attempt; when present, the LLM will use it to correct its output.",
     )
 
     previousScript: Optional[str] = Field(
@@ -103,7 +103,7 @@ class SuggestMappingRequest(BaseModel):
                         "midPoint": [{"name": "c:name", "value": ["empty"]}],
                     },
                 ],
-                "errorLog": "Optional: Backend validation error log from previous attempt.",
+                "errorLog": "Optional: Runtime error log from previous attempt.",
                 "previousScript": "// Uppercase input\n(input?.toUpperCase())",
             }
         }

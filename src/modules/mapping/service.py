@@ -119,7 +119,7 @@ async def suggest_mapping_script(req: SuggestMappingRequest) -> SuggestMappingRe
         error_text = str(req.errorLog).strip()
         if error_text:
             context_parts.append(
-                "IMPORTANT: The previous attempt failed backend validation. "
+                "IMPORTANT: The previous attempt failed when evaluated. "
                 "Read the error log below and correct your output accordingly.\n\n"
                 "```\n" + error_text + "\n```"
             )
