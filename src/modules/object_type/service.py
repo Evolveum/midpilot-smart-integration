@@ -28,6 +28,42 @@ Service module for suggesting object types (kind, intent and delineation rules) 
 """
 
 
+def _object_type_context_item(suggestion: ObjectTypeSuggestion) -> dict:
+    """
+    Keep only fields useful for prompting and omit empty values.
+    """
+    item = {
+        "kind": suggestion.kind,
+        "intent": suggestion.intent,
+        "displayName": suggestion.displayName,
+        "description": suggestion.description,
+        "filter": suggestion.filter,
+        "baseContextFilter": suggestion.baseContextFilter,
+        "baseContextObjectClassName": suggestion.baseContextObjectClassName,
+    }
+    return {key: value for key, value in item.items() if value not in (None, [], "")}
+
+
+def build_existing_object_types_context(req: SuggestObjectTypeRequest) -> str:
+    """
+    Build the explicit saved/confirmed/rejected object-type context used by regeneration prompts.
+    Returns a short plain-text marker when no context was supplied so the prompt remains deterministic.
+    """
+    saved = [_object_type_context_item(item) for item in (req.savedObjectTypes or [])]
+    confirmed = [_object_type_context_item(item) for item in (req.confirmedSuggestions or [])]
+    rejected = [_object_type_context_item(item) for item in (req.rejectedSuggestions or [])]
+
+    if not saved and not confirmed and not rejected:
+        return "No existing object type context was provided."
+
+    payload = {
+        "savedObjectTypes": saved,
+        "confirmedSuggestions": confirmed,
+        "rejectedSuggestions": rejected,
+    }
+    return "```json\n" + pretty_json(payload) + "\n```"
+
+
 def build_feedback_messages(validation_errors) -> List[BaseMessage]:
     """
     Build a HumanMessage with a JSON code block from backend validation errors.
@@ -130,6 +166,7 @@ async def suggest_delineation(req: SuggestObjectTypeRequest) -> SuggestObjectTyp
     """
     # 1) Build prompt payload and JSON
     stats_json = pretty_json(build_object_type_prompt_data(req))
+    existing_object_types_context = build_existing_object_types_context(req)
 
     # 2) Build feedback messages (or empty list)
     feedback_messages: List[BaseMessage] = []
@@ -149,6 +186,7 @@ async def suggest_delineation(req: SuggestObjectTypeRequest) -> SuggestObjectTyp
         delineation = await chain.ainvoke(
             {
                 "stats_json": stats_json,
+                "existing_object_types_context": existing_object_types_context,
                 "regen_messages": regen_messages,
                 "feedback_messages": feedback_messages,
             },

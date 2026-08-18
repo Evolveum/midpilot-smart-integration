@@ -196,6 +196,33 @@ class SuggestObjectTypeRequest(BaseModel):
                         "filterErrors": ["Unknown attribute ri:groupType"],
                     }
                 ],
+                "savedObjectTypes": [
+                    {
+                        "kind": "entitlement",
+                        "intent": "critical",
+                        "displayName": "Critical Entitlements",
+                        "description": "Already saved object type that should be kept stable.",
+                        "filter": ["c:attributes/ri:groupType = -2147483646.0"],
+                    }
+                ],
+                "confirmedSuggestions": [
+                    {
+                        "kind": "entitlement",
+                        "intent": "distribution",
+                        "displayName": "Distribution Entitlements",
+                        "description": "Previously suggested object type accepted by the user.",
+                        "filter": ["c:attributes/ri:groupType = 8.0"],
+                    }
+                ],
+                "rejectedSuggestions": [
+                    {
+                        "kind": "entitlement",
+                        "intent": "genericGroup",
+                        "displayName": "Generic Group",
+                        "description": "Previously suggested object type rejected by the user.",
+                        "filter": ["c:attributes/ri:dn contains \"ou=Groups\""],
+                    }
+                ],
             }
         },
     )
@@ -216,6 +243,27 @@ class SuggestObjectTypeRequest(BaseModel):
     previousDelineation: Optional[List["ObjectTypeSuggestion"]] = Field(
         default=None,
         description="Previously suggested delineations; provided for NEW_DATA_SPLIT and NEW_FILTER modes to guide a different result.",
+    )
+    savedObjectTypes: Optional[List["ObjectTypeSuggestion"]] = Field(
+        default=None,
+        description=(
+            "Object types already saved in MidPoint for the same object class before generation starts. "
+            "These are treated as locked context for naming and partitioning."
+        ),
+    )
+    confirmedSuggestions: Optional[List["ObjectTypeSuggestion"]] = Field(
+        default=None,
+        description=(
+            "Previously generated object type suggestions accepted by the user. "
+            "These are treated as locked context during regeneration."
+        ),
+    )
+    rejectedSuggestions: Optional[List["ObjectTypeSuggestion"]] = Field(
+        default=None,
+        description=(
+            "Previously generated object type suggestions rejected by the user. "
+            "The model should avoid repeating these suggestions unchanged."
+        ),
     )
 
 

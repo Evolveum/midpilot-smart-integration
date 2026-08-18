@@ -86,6 +86,21 @@ Ensure every rule is valid MQL using the midPoint data model and follows all quo
   - In that case, the rule may have no `filter` or `baseContextFilter`.
   - Such a rule still needs unique `(kind, intent)` labels.
 
+## Existing object types context
+{existing_object_types_context}
+
+Rules for using existing object types:
+- Existing object types, when provided, are already present for the same object class.
+- Existing object types may come from saved configuration or from suggestions that the user confirmed in a previous generation step.
+- Treat saved and confirmed object types as locked context about known categories, naming conventions, and expected partitioning style.
+- Rejected suggestions, when provided, are suggestions from a previous generation step that the user did not accept.
+- Do not repeat rejected suggestions unchanged. Use them as negative feedback and generate a better non-overlapping final set.
+- Still infer filters from the statistics. Do not blindly copy an existing object type if the statistics do not support it.
+- Return the complete final object-type set for the object class: keep locked saved/confirmed entries stable and add or adjust the remaining suggestions around them.
+- Do not create duplicate `(kind, intent)` pairs.
+- When an existing object type label is clearly supported by the statistics, keep the label stable instead of inventing a synonym.
+- For remaining uncovered categories, generate new object type suggestions that do not overlap with the existing ones.
+
 ## Special Guidance for Rule Construction
 - If the same attribute shows both **prefix** and **suffix** patterns, choose **only one** type of patterning (whichever provides clearer partitioning). Do not emit both for the same attribute.
 - If an attribute is **present for some objects but missing for others**, this difference itself is an important delineation criterion. You may create rules based on **existence** checks using `path exists` / `path not exists` (e.g. `employeeNumber exists`).

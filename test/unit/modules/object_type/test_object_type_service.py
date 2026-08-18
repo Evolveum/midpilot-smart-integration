@@ -14,6 +14,7 @@ from src.modules.object_type.schema import (
     SuggestObjectTypeResponse,
 )
 from src.modules.object_type.service import (
+    build_existing_object_types_context,
     build_object_type_prompt_data,
     suggest_delineation,
 )
@@ -121,6 +122,80 @@ def test_build_full_object_type_prompt_data_empty():
         ],
     }
     assert build_object_type_prompt_data(full_request) == expected
+
+
+def test_build_existing_object_types_context_empty():
+    assert build_existing_object_types_context(request) == "No existing object type context was provided."
+
+
+def test_build_existing_object_types_context_with_saved_confirmed_rejected():
+    req = SuggestObjectTypeRequest(
+        **{
+            **_BASIC_REQ,
+            "savedObjectTypes": [
+                {
+                    "kind": "entitlement",
+                    "intent": "critical",
+                    "displayName": "Critical Entitlements",
+                    "description": "Already saved object type.",
+                    "filter": ["c:attributes/ri:groupType = -2147483646.0"],
+                }
+            ],
+            "confirmedSuggestions": [
+                {
+                    "kind": "entitlement",
+                    "intent": "distribution",
+                    "displayName": "Distribution Entitlements",
+                    "description": "Accepted previous suggestion.",
+                    "filter": ["c:attributes/ri:groupType = 8.0"],
+                }
+            ],
+            "rejectedSuggestions": [
+                {
+                    "kind": "entitlement",
+                    "intent": "genericGroup",
+                    "displayName": "Generic Group",
+                    "description": "Rejected previous suggestion.",
+                    "filter": ["c:attributes/ri:dn contains \"ou=Groups\""],
+                }
+            ],
+        }
+    )
+
+    context = build_existing_object_types_context(req)
+
+    assert context.startswith("```json\n")
+    assert context.endswith("\n```")
+    payload = json.loads(context.removeprefix("```json\n").removesuffix("\n```"))
+    assert payload == {
+        "savedObjectTypes": [
+            {
+                "kind": "entitlement",
+                "intent": "critical",
+                "displayName": "Critical Entitlements",
+                "description": "Already saved object type.",
+                "filter": ["c:attributes/ri:groupType = -2147483646.0"],
+            }
+        ],
+        "confirmedSuggestions": [
+            {
+                "kind": "entitlement",
+                "intent": "distribution",
+                "displayName": "Distribution Entitlements",
+                "description": "Accepted previous suggestion.",
+                "filter": ["c:attributes/ri:groupType = 8.0"],
+            }
+        ],
+        "rejectedSuggestions": [
+            {
+                "kind": "entitlement",
+                "intent": "genericGroup",
+                "displayName": "Generic Group",
+                "description": "Rejected previous suggestion.",
+                "filter": ["c:attributes/ri:dn contains \"ou=Groups\""],
+            }
+        ],
+    }
 
 
 _SINGLE_RULE_JSON = json.dumps(
