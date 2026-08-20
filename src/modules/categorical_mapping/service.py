@@ -10,6 +10,7 @@ from langchain_core.output_parsers import PydanticOutputParser
 from ...common.errors import LLMResponseValidationException
 from ...common.langfuse import langfuse_handler
 from ...common.llm import get_default_llm, make_basic_chain
+from ...utils import is_null_script
 from .prompts import suggest_categorical_mapping_prompt
 from .schema import SuggestCategoricalMappingRequest, SuggestCategoricalMappingResponse
 
@@ -48,6 +49,9 @@ async def suggest_categorical_mapping_script(
             {**prompt_vars, "format_instructions": parser.get_format_instructions()},
             config={"callbacks": [langfuse_handler]},
         )
+        if is_null_script(resp.transformationScript):
+            resp.description = None
+            resp.transformationScript = None
         return resp
 
     except OutputParserException as exc:

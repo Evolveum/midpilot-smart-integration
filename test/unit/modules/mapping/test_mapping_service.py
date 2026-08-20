@@ -192,7 +192,7 @@ async def test_suggest_mapping_script_inbound(monkeypatch):
                 midPoint=[ValueExample(name="givenName", value=["JOHN"])],
             )
         ],
-        errorLog="Simulated backend validation error for inbound test",
+        errorLog="Simulated runtime error for inbound test",
         previousScript="// Uppercase input\ninput.firstName?.toUpperCase()",
     )
     resp = await suggest_mapping_script(req)
@@ -219,7 +219,7 @@ async def test_suggest_mapping_script_outbound(monkeypatch):
                 midPoint=[ValueExample(name="givenName", value=["JOHN"])],
             )
         ],
-        errorLog="Simulated backend validation error for outbound test",
+        errorLog="Simulated runtime error for outbound test",
         previousScript="// Uppercase firstName\ninput?.toUpperCase()",
     )
     resp = await suggest_mapping_script(req)
@@ -247,7 +247,7 @@ async def test_suggest_mapping_script_has_manager_single(monkeypatch):
             ),
             IOExample(midPoint=[ValueExample(name="hasManager", value=["false"])]),
         ],
-        errorLog="Simulated backend validation error for manager test",
+        errorLog="Simulated runtime error for manager test",
         previousScript="// Check input presence\nreturn input ? true : false",
     )
     resp = await suggest_mapping_script(req)

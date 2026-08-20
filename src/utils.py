@@ -3,6 +3,7 @@
 # Licensed under the EUPL-1.2 or later.
 
 import json
+import re
 from datetime import datetime
 from typing import Any
 
@@ -148,6 +149,17 @@ def pretty_json(value: Any) -> str:
     """
 
     return json.dumps(value, ensure_ascii=False, indent=2)
+
+
+def is_null_script(script: str | None) -> bool:
+    """
+    Return True when an LLM response did not contain executable MEL.
+    """
+    if script is None:
+        return True
+    normalized = re.sub(r"//.*", "", script)
+    normalized = normalized.strip()
+    return not normalized or normalized == "null" or normalized == "return null"
 
 
 def get_version_info():
