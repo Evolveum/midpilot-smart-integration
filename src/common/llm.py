@@ -1,6 +1,7 @@
 # Copyright (c) 2010-2025 Evolveum and contributors
 #
 # Licensed under the EUPL-1.2 or later.
+
 import asyncio
 import logging
 import ssl
@@ -12,8 +13,8 @@ from langchain.prompts import BasePromptTemplate
 from langchain_core.output_parsers import BaseOutputParser
 from langchain_core.runnables import Runnable, RunnableConfig, RunnableLambda, RunnableParallel
 from langchain_openai import ChatOpenAI
-
-from ..config import config
+from .errors import LLMTimeoutException
+from ..config import config as app_config
 
 logger = logging.getLogger(__name__)
 
@@ -26,16 +27,18 @@ def get_default_llm(temperature: float = 1.0) -> ChatOpenAI:
     :return: Configured ChatOpenAI instance.
     """
     verify: ssl.SSLContext | bool = (
-        ssl.create_default_context(cafile=config.llm.ca_cert_file) if config.llm.ca_cert_file else True
+        ssl.create_default_context(cafile=app_config.llm.ca_cert_file) if app_config.llm.ca_cert_file else True
     )
+
     http_client = httpx.AsyncClient(verify=verify)
+
     return ChatOpenAI(
-        openai_api_key=config.llm.openai_api_key,
-        openai_api_base=config.llm.openai_api_base,
-        model_name=config.llm.model_name,
+        openai_api_key=app_config.llm.openai_api_key,
+        openai_api_base=app_config.llm.openai_api_base,
+        model_name=app_config.llm.model_name,
         temperature=temperature,
-        reasoning_effort=config.llm.reasoning_effort,
-        extra_body=config.llm.extra_body,
+        reasoning_effort=app_config.llm.reasoning_effort,
+        extra_body=app_config.llm.extra_body,
         http_async_client=http_client,
     )
 
@@ -61,14 +64,36 @@ def make_basic_chain(prompt: BasePromptTemplate, llm: ChatOpenAI, parser: BaseOu
 
     inner_chain = RunnableParallel(completion=completion_chain, prompt_value=prompt) | RunnableLambda(parse_with_retry)
 
-    async def _instrumented(input_value: Any, config: RunnableConfig) -> Any:
-        logger.debug("LLM call started")
+    async def _instrumented(  input_value: Any,   config: RunnableConfig) -> Any:
+        timeout = app_config.llm.llm_timeout
+
+        logger.debug("LLM chain started, timeout=%ss", timeout)
+
         try:
-            result = await inner_chain.ainvoke(input_value, config)
-            logger.debug("LLM call completed")
+            # Enforce the timeout around the whole LLM chain. Cancelling the chain propagates
+            # cancellation to the underlying HTTP request e.g. LiteLLM.
+            async with asyncio.timeout(timeout):
+                result = await inner_chain.ainvoke(
+                    input_value,
+                    config,
+                )
+
+            logger.debug("LLM chain completed")
             return result
+
+        except TimeoutError as exc:
+            logger.warning(
+                "LLM chain timed out after %s seconds",
+                timeout,
+            )
+            raise LLMTimeoutException(timeout) from exc
+
         except asyncio.CancelledError:
-            logger.warning("LLM call cancelled (likely client disconnect or request timeout)")
+            logger.warning("LLM chain cancelled")
+            raise
+
+        except Exception:
+            logger.exception("LLM chain failed")
             raise
 
     return RunnableLambda(_instrumented)

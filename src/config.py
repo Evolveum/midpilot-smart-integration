@@ -51,12 +51,16 @@ class LLMSettings(BaseModel):
     """
     Configuration for the LLM client.
 
+    :param llm_timeout: Timeout in seconds for the whole LLM chain/client call.
     :param openai_api_key: API key for OpenAI-compatible services.
     :param openai_api_base: Base URL for the API endpoint.
     :param model_name: Default model identifier to use.
     :param extra_body: Extra body used for provider-specific requests.
     :param ca_cert_file: Optional CA certificate file for internal TLS.
     """
+
+    # LLM call timeout
+    llm_timeout: int = 120
 
     openai_api_key: str = ""
     openai_api_base: str = "https://openrouter.ai/api/v1"
@@ -108,7 +112,6 @@ class AppSettings(BaseModel):
     :param root_path: Root path for mounting.
     :param timeout_keep_alive: Keep-alive timeout for connections.
     :param timeout_graceful_shutdown: Graceful shutdown timeout.
-    :param request_timeout: Timeout for processing a single API request in seconds.
     :param limit_concurrency: Optional limit on concurrent requests.
     :param limit_max_requests: Optional max requests per worker.
     :param ssl_certfile: Optional path to SSL certificate file.
@@ -130,7 +133,6 @@ class AppSettings(BaseModel):
     root_path: str = ""
     timeout_keep_alive: int = 10
     timeout_graceful_shutdown: int = 15
-    request_timeout: int = 120
     limit_concurrency: Optional[int] = None
     limit_max_requests: Optional[int] = None
     ssl_certfile: Optional[str] = None
