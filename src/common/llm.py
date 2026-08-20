@@ -65,7 +65,7 @@ def make_basic_chain(prompt: BasePromptTemplate, llm: ChatOpenAI, parser: BaseOu
     inner_chain = RunnableParallel(completion=completion_chain, prompt_value=prompt) | RunnableLambda(parse_with_retry)
 
     async def _instrumented(  input_value: Any,   config: RunnableConfig) -> Any:
-        timeout = app_config.llm.llm_timeout
+        timeout = app_config.llm.request_timeout
 
         logger.debug("LLM chain started, timeout=%ss", timeout)
 

@@ -51,7 +51,7 @@ class LLMSettings(BaseModel):
     """
     Configuration for the LLM client.
 
-    :param llm_timeout: Timeout in seconds for the whole LLM chain/client call.
+    :param request_timeout: Timeout in seconds for the whole LLM chain/client call.
     :param openai_api_key: API key for OpenAI-compatible services.
     :param openai_api_base: Base URL for the API endpoint.
     :param model_name: Default model identifier to use.
@@ -59,9 +59,7 @@ class LLMSettings(BaseModel):
     :param ca_cert_file: Optional CA certificate file for internal TLS.
     """
 
-    # LLM call timeout
-    llm_timeout: int = 120
-
+    request_timeout: int = 120
     openai_api_key: str = ""
     openai_api_base: str = "https://openrouter.ai/api/v1"
     model_name: str = "openai/gpt-oss-20b"
