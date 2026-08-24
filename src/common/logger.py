@@ -46,3 +46,6 @@ def setup_logging():
 
     hypercorn_access.setLevel(level)
     hypercorn_error.setLevel(level)
+
+    logging.getLogger("openai").setLevel(logging.INFO)
+    logging.getLogger("httpcore").setLevel(logging.INFO)

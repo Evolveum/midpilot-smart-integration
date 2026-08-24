@@ -130,7 +130,7 @@ def test_build_prompt_data_lockout_status():
 @patch(
     "src.modules.categorical_mapping.service.get_default_llm",
     response_mock(
-        '{"description":"Map status values to administrativeStatus","transformationScript":"// Map status values to administrativeStatus\\n{{\\n  \'active\': \'enabled\',\\n  \'inactive\': \'disabled\'\\n}}[input]"}'
+        "{\"description\":\"Map status values to administrativeStatus\",\"transformationScript\":\"// Map status values to administrativeStatus\\n{{\\n  'active': 'enabled',\\n  'inactive': 'disabled'\\n}}[input]\"}"
     ),
 )
 async def test_suggest_categorical_mapping_script_smoke(monkeypatch):

@@ -13,8 +13,9 @@ from langchain.prompts import BasePromptTemplate
 from langchain_core.output_parsers import BaseOutputParser
 from langchain_core.runnables import Runnable, RunnableConfig, RunnableLambda, RunnableParallel
 from langchain_openai import ChatOpenAI
-from .errors import LLMTimeoutException
+
 from ..config import config as app_config
+from .errors import LLMTimeoutException
 
 logger = logging.getLogger(__name__)
 
@@ -64,7 +65,7 @@ def make_basic_chain(prompt: BasePromptTemplate, llm: ChatOpenAI, parser: BaseOu
 
     inner_chain = RunnableParallel(completion=completion_chain, prompt_value=prompt) | RunnableLambda(parse_with_retry)
 
-    async def _instrumented(  input_value: Any,   config: RunnableConfig) -> Any:
+    async def _instrumented(input_value: Any, config: RunnableConfig) -> Any:
         timeout = app_config.llm.request_timeout
 
         logger.debug("LLM chain started, timeout=%ss", timeout)

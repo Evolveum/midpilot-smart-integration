@@ -4,9 +4,8 @@
 
 import logging
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Response
 from fastapi.responses import JSONResponse
-from starlette.types import ASGIApp, Receive, Scope, Send
 
 from .common.errors import ServiceUnavailableException
 from .config import config
@@ -17,6 +16,7 @@ from .utils import get_version_info
 
 logger = logging.getLogger(__name__)
 
+
 def create_api() -> FastAPI:
     """
     Initialize and configure the FastAPI application.
@@ -25,6 +25,38 @@ def create_api() -> FastAPI:
     """
     app = FastAPI(title=config.app.title, version=get_version_info(), root_path=config.app.root_path)
     app.include_router(root_router, prefix=config.app.api_base_url)
+
+    @app.middleware("http")
+    async def log_requests(request: Request, call_next) -> Response:
+        """
+        Log every incoming request and its response at DEBUG level.
+        """
+        if logger.isEnabledFor(logging.DEBUG):
+            logger.debug(
+                "Incoming request: %s %s",
+                request.method,
+                request.url,
+            )
+
+        try:
+            response = await call_next(request)
+        except Exception:
+            logger.debug(
+                "Request failed: %s %s",
+                request.method,
+                request.url,
+                exc_info=True,
+            )
+            raise
+
+        logger.debug(
+            "Outgoing response: %s %s | status=%s",
+            request.method,
+            request.url,
+            response.status_code,
+        )
+
+        return response
 
     @app.exception_handler(ServiceUnavailableException)
     async def service_unavailable_handler(request: Request, exc: ServiceUnavailableException) -> JSONResponse:

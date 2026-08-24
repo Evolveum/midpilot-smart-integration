@@ -24,6 +24,7 @@ class LLMResponseValidationException(HTTPException):
     def __init__(self):
         super().__init__(status_code=550, detail="LLM Response Validation Error")
 
+
 class LLMTimeoutException(HTTPException):
     """
     Exception raised when an LLM request exceeds the configured timeout.
@@ -34,6 +35,7 @@ class LLMTimeoutException(HTTPException):
             status_code=504,
             detail=f"LLM request timed out after {timeout} seconds",
         )
+
 
 class NotImplementedError(HTTPException):
     """
