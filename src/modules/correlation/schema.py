@@ -6,7 +6,7 @@ from typing import Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
-from ...common.schema import BaseSchemaAttribute
+from ...common.schema import BaseSchemaAttribute, ResponseMetadata, get_response_metadata
 
 
 class BasicAttributeStats(BaseModel):
@@ -94,6 +94,10 @@ class SuggestExtensionCorrelatorsResponse(BaseModel):
     correlators: List[str] = Field(
         ...,
         description="List of attribute names proposed for correlators (e.g., c:extension/ext:personalNumber).",
+    )
+    metadata: ResponseMetadata = Field(
+        default_factory=get_response_metadata,
+        description="Metadata about configured provider and used model.",
     )
 
     model_config = {

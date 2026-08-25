@@ -6,7 +6,7 @@ from typing import List
 
 from pydantic import BaseModel, Field, field_validator
 
-from ...common.schema import BaseSchemaAttribute
+from ...common.schema import BaseSchemaAttribute, ResponseMetadata, get_response_metadata
 
 
 class AttributeValueCount(BaseModel):
@@ -62,4 +62,8 @@ class SuggestCategoricalMappingResponse(BaseModel):
     transformationScript: str | None = Field(
         None,
         description="MEL code starting with a single-line comment `// <description>` on the first line, followed by the mapping logic.",
+    )
+    metadata: ResponseMetadata = Field(
+        default_factory=get_response_metadata,
+        description="Metadata about configured provider and used model.",
     )

@@ -7,6 +7,8 @@ from typing import List, Optional
 
 from pydantic import BaseModel, Field
 
+from ...common.schema import ResponseMetadata, get_response_metadata
+
 
 class HealthStatus(str, Enum):
     OK = "OK"
@@ -20,13 +22,11 @@ class CheckResult(BaseModel):
     error: Optional[str] = Field(None)
 
 
-class AiInfo(BaseModel):
-    provider: str
-    model: str
-
-
 class HealthResponse(BaseModel):
     status: HealthStatus
     version: str
-    ai: AiInfo
+    metadata: ResponseMetadata = Field(
+        default_factory=get_response_metadata,
+        description="Metadata about configured provider and used model.",
+    )
     checks: List[CheckResult]

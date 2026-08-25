@@ -6,6 +6,8 @@ from typing import List
 
 from pydantic import BaseModel, Field
 
+from ...common.schema import ResponseMetadata, get_response_metadata
+
 # -------------------------
 # Common types
 # -------------------------
@@ -200,6 +202,10 @@ class ComplexPairingResponse(BaseModel):
     rationale: str = Field(..., min_length=1, description="Short explanation for the decision.")
     mappings: List[IdMapping] = Field(
         ..., min_length=1, description="Resolved identifier pairs MidPoint -> Application."
+    )
+    metadata: ResponseMetadata = Field(
+        default_factory=get_response_metadata,
+        description="Metadata about configured provider and used model.",
     )
 
     model_config = {

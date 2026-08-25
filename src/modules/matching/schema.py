@@ -6,7 +6,7 @@ from typing import List
 
 from pydantic import BaseModel, Field
 
-from ...common.schema import ApplicationSchema, MidpointSchema
+from ...common.schema import ApplicationSchema, MidpointSchema, ResponseMetadata, get_response_metadata
 from .schema_examples import (
     midpoint_email_address_description_example,
     midpoint_name_description_example,
@@ -124,3 +124,7 @@ class MatchSchemaResponse(BaseModel):
     """
 
     attributeMatch: List[SchemaAttributeMatch] = Field(..., description="List of matched schema attributes")
+    metadata: ResponseMetadata = Field(
+        default_factory=get_response_metadata,
+        description="Metadata about configured provider and used model.",
+    )

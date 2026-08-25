@@ -7,7 +7,7 @@ from typing import Optional
 
 from pydantic import BaseModel, Field
 
-from ...common.schema import ApplicationSchema
+from ...common.schema import ApplicationSchema, ResponseMetadata, get_response_metadata
 
 
 class FocusType(str, Enum):
@@ -107,6 +107,10 @@ class SuggestFocusTypeResponse(BaseModel):
     """
 
     focusTypeName: FocusType = Field(..., description="Suggested focus type")
+    metadata: ResponseMetadata = Field(
+        default_factory=get_response_metadata,
+        description="Metadata about configured provider and used model.",
+    )
 
     model_config = {
         "json_schema_extra": {

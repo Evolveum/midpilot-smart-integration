@@ -25,8 +25,8 @@ def test_health_endpoint(client: TestClient) -> None:
     assert response.status_code == 200
     data = response.json()
     assert data["status"] == HealthStatus.OK
-    assert data["ai"]["provider"] == config.llm.openai_api_base
-    assert data["ai"]["model"] == config.llm.model_name
+    assert data["metadata"]["provider"] == config.llm.openai_api_base
+    assert data["metadata"]["model"] == config.llm.model_name
     checks_by_name = {c["name"]: c for c in data["checks"]}
     assert checks_by_name["server"]["status"] == HealthStatus.OK
     assert checks_by_name["llm"]["status"] == HealthStatus.OK

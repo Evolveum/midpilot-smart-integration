@@ -6,7 +6,7 @@ from typing import List
 
 from pydantic import BaseModel, Field
 
-from ...common.schema import ApplicationSchema
+from ...common.schema import ApplicationSchema, ResponseMetadata, get_response_metadata
 
 
 class BasicAttributeStats(BaseModel):
@@ -113,6 +113,10 @@ class SuggestExtensionResponse(BaseModel):
             "List of resource attribute names returned as-is, e.g., "
             "c:attributes/ri:personalNumber, c:attributes/ri:department."
         ),
+    )
+    metadata: ResponseMetadata = Field(
+        default_factory=get_response_metadata,
+        description="Metadata about configured provider and used model.",
     )
 
     model_config = {

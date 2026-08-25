@@ -7,7 +7,24 @@ from typing import List, Optional
 
 from pydantic import BaseModel, Field
 
+from src.config import config
 from src.modules.utils import clean_description
+
+
+class ResponseMetadata(BaseModel):
+    """
+    Metadata about configured AI inference provider and model.
+    """
+
+    provider: str = Field(..., description="Configured inference provider.")
+    model: str = Field(..., description="Configured model identifier.")
+
+
+def get_response_metadata() -> ResponseMetadata:
+    """
+    Return ResponseMetadata instance with configured provider and model.
+    """
+    return ResponseMetadata(provider=config.llm.openai_api_base, model=config.llm.model_name)
 
 
 class BaseSchemaAttribute(BaseModel):

@@ -7,7 +7,7 @@ from typing import List, Optional, Tuple
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from src.common.schema import ApplicationSchema
+from src.common.schema import ApplicationSchema, ResponseMetadata, get_response_metadata
 
 
 class RegenerateMode(str, Enum):
@@ -292,3 +292,7 @@ class SuggestObjectTypeResponse(BaseModel):
     )
 
     objectType: List[ObjectTypeSuggestion] = Field(..., description="Suggested object types.")
+    metadata: ResponseMetadata = Field(
+        default_factory=get_response_metadata,
+        description="Metadata about configured provider and used model.",
+    )

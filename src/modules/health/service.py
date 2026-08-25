@@ -9,9 +9,10 @@ from langchain_core.messages import HumanMessage
 
 from ...common.langfuse import langfuse
 from ...common.llm import get_default_llm
+from ...common.schema import get_response_metadata
 from ...config import config
 from ...utils import get_version_info
-from .schema import AiInfo, CheckResult, HealthResponse, HealthStatus
+from .schema import CheckResult, HealthResponse, HealthStatus
 
 logger = logging.getLogger(__name__)
 
@@ -45,5 +46,4 @@ async def run_health_checks() -> HealthResponse:
         checks.append(CheckResult(name="langfuse", status=HealthStatus.DISABLED))
 
     overall = HealthStatus.OK if all(c.status != HealthStatus.ERROR for c in checks) else HealthStatus.ERROR
-    ai = AiInfo(provider=config.llm.openai_api_base, model=config.llm.model_name)
-    return HealthResponse(status=overall, version=get_version_info(), ai=ai, checks=checks)
+    return HealthResponse(status=overall, version=get_version_info(), metadata=get_response_metadata(), checks=checks)

@@ -7,7 +7,7 @@ from typing import List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from ...common.schema import BaseSchemaAttribute
+from ...common.schema import BaseSchemaAttribute, ResponseMetadata, get_response_metadata
 
 
 # Allowed simple xsd types for clarity and request checks
@@ -122,6 +122,10 @@ class SuggestMappingResponse(BaseModel):
     transformationScript: Optional[str] = Field(
         None,
         description="MEL code starting with a single-line comment `// <description>` on the first line, followed by the code. The last expression must evaluate to the desired value.",
+    )
+    metadata: ResponseMetadata = Field(
+        default_factory=get_response_metadata,
+        description="Metadata about configured provider and used model.",
     )
 
     model_config = ConfigDict(
