@@ -6,6 +6,7 @@ import json
 import re
 from datetime import datetime
 from typing import Any
+from common.errors import InvalidValueException
 
 from .config import config
 
@@ -67,7 +68,7 @@ def _quote_single_by_type(raw: str, type_str: str) -> str:
         val = v.lower()
         if val == "true" or val == "false":
             return val
-        raise ValueError(f"Expected 'true' or 'false' for boolean, got {raw!r}")
+        raise InvalidValueException(f"Expected 'true' or 'false' for boolean, got {raw!r}")
 
     if t == "xsd:string":
         return f'"{v}"'
@@ -76,24 +77,24 @@ def _quote_single_by_type(raw: str, type_str: str) -> str:
         try:
             int(v)  # Check if it's a valid integer.
             return v
-        except ValueError:
-            raise ValueError(f"Invalid integer {raw!r} for type {type_str}")
+        except InvalidValueException:
+            raise InvalidValueException(f"Invalid integer {raw!r} for type {type_str}")
 
     if t in ("xsd:double", "xsd:float"):
         try:
             float(v)  # Check if it's a valid float
             return v
-        except ValueError:
-            raise ValueError(f"Invalid float {raw!r} for type {type_str}")
+        except InvalidValueException:
+            raise InvalidValueException(f"Invalid float {raw!r} for type {type_str}")
 
     if t == "xsd:datetime":
         try:
             datetime.fromisoformat(v)  # Check if it's a valid datetime in iso format
             return v
         except Exception as e:
-            raise ValueError(f"Invalid datetime {raw!r}: {e}") from e
+            raise InvalidValueException(f"Invalid datetime {raw!r}: {e}") from e
 
-    raise ValueError(f"Unsupported XSD type: {type_str!r}")
+    raise InvalidValueException(f"Unsupported XSD type: {type_str!r}")
 
 
 def quote_by_type(raw: Any, type_str: str, multivalued: bool = False) -> Any:
@@ -136,9 +137,12 @@ def quote_by_type(raw: Any, type_str: str, multivalued: bool = False) -> Any:
         return parsed_list
     if len(parsed_list) == 1:
         return parsed_list[0]
-    raise ValueError(
-        f"Expected single non-multivalued value for type {type_str}, got list of length {len(parsed_list)}"
+
+    raise InvalidValueException(
+        f"Expected single non-multivalued value for type {type_str}, "
+        f"got list of length {len(parsed_list)}"
     )
+
 
 
 def pretty_json(value: Any) -> str:
