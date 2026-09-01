@@ -59,7 +59,7 @@ def _quote_single_by_type(raw: str, type_str: str) -> str:
     :param raw: The raw string representation of the value.
     :param type_str: The XSD type string (e.g., "xsd:int", "xsd:datetime").
     :return: The potentially quoted string.
-    :raises ValueError: If the value is invalid for the given type, or the type is unsupported.
+    :raises InvalidValueException: If the value is invalid for the given type, or the type is unsupported.
     """
     v = raw.strip()
     t = type_str.strip().lower()
