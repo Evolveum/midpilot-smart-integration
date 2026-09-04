@@ -5,9 +5,10 @@
 import asyncio
 import logging
 import ssl
-from typing import Any
+from typing import Any, Awaitable
 
 import httpx
+import openai
 from langchain.output_parsers import RetryWithErrorOutputParser
 from langchain.prompts import BasePromptTemplate
 from langchain_core.output_parsers import BaseOutputParser
@@ -15,9 +16,22 @@ from langchain_core.runnables import Runnable, RunnableConfig, RunnableLambda, R
 from langchain_openai import ChatOpenAI
 
 from ..config import config as app_config
-from .errors import LLMTimeoutException
+from .errors import LLMTimeoutException, LLMUnauthorizedException
 
 logger = logging.getLogger(__name__)
+
+
+async def invoke_with_auth_guard(coroutine: Awaitable[Any]) -> Any:
+    """
+    Await *coroutine* and translate OpenAI 401 authentication errors into a
+    sanitized LLMUnauthorizedException that does not expose the API key.
+    """
+    try:
+        return await coroutine
+    except openai.APIStatusError as exc:
+        if exc.status_code == 401:
+            raise LLMUnauthorizedException from exc
+        raise
 
 
 def get_default_llm(temperature: float = 1.0) -> ChatOpenAI:
@@ -74,10 +88,7 @@ def make_basic_chain(prompt: BasePromptTemplate, llm: ChatOpenAI, parser: BaseOu
             # Enforce the timeout around the whole LLM chain. Cancelling the chain propagates
             # cancellation to the underlying HTTP request e.g. LiteLLM.
             async with asyncio.timeout(timeout):
-                result = await inner_chain.ainvoke(
-                    input_value,
-                    config,
-                )
+                result = await invoke_with_auth_guard(inner_chain.ainvoke(input_value, config))
 
             logger.debug("LLM chain completed")
             return result

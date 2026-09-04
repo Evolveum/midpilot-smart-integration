@@ -58,3 +58,16 @@ class InvalidValueException(HTTPException, ValueError):
     def __init__(self, detail: Any):
         LOGGER.debug("Invalid value: %s", detail)
         super().__init__(status_code=400, detail=detail)
+
+
+class LLMUnauthorizedException(HTTPException):
+    """
+    Exception raised when an LLM request fails because the configured API key
+    is invalid or not authorized. The message must not include the API key.
+    """
+
+    def __init__(self):
+        super().__init__(
+            status_code=401,
+            detail="Authentication with the LLM service failed. The configured API key is invalid or not authorized.",
+        )

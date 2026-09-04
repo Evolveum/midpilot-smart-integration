@@ -8,7 +8,7 @@ from typing import List
 from langchain_core.messages import HumanMessage
 
 from ...common.langfuse import langfuse
-from ...common.llm import get_default_llm
+from ...common.llm import get_default_llm, invoke_with_auth_guard
 from ...common.schema import get_response_metadata
 from ...config import config
 from ...utils import get_version_info
@@ -29,7 +29,7 @@ async def run_health_checks() -> HealthResponse:
 
     try:
         llm = get_default_llm()
-        await llm.ainvoke([HumanMessage(content="Say hello")])
+        await invoke_with_auth_guard(llm.ainvoke([HumanMessage(content="Say hello")]))
         checks.append(CheckResult(name="llm", status=HealthStatus.OK))
     except Exception as e:
         logger.error("LLM health check failed: %s", e, exc_info=True)
