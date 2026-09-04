@@ -30,7 +30,7 @@ async def invoke_with_auth_guard(coroutine: Awaitable[Any]) -> Any:
         return await coroutine
     except openai.APIStatusError as exc:
         if exc.status_code == 401:
-            raise LLMUnauthorizedException from exc
+            raise LLMUnauthorizedException() from None
         raise
 
 
