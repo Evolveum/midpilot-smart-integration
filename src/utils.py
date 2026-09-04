@@ -6,7 +6,8 @@ import json
 import re
 from datetime import datetime
 from typing import Any
-from common.errors import InvalidValueException
+
+from src.common.errors import InvalidValueException
 
 from .config import config
 
@@ -139,10 +140,8 @@ def quote_by_type(raw: Any, type_str: str, multivalued: bool = False) -> Any:
         return parsed_list[0]
 
     raise InvalidValueException(
-        f"Expected single non-multivalued value for type {type_str}, "
-        f"got list of length {len(parsed_list)}"
+        f"Expected single non-multivalued value for type {type_str}, got list of length {len(parsed_list)}"
     )
-
 
 
 def pretty_json(value: Any) -> str:

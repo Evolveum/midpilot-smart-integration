@@ -9,6 +9,7 @@ from fastapi import HTTPException
 
 LOGGER = logging.getLogger(__name__)
 
+
 class ServiceUnavailableException(HTTPException):
     """
     Exception raised when the service or one of its dependencies is unavailable.
@@ -49,8 +50,7 @@ class NotImplementedError(HTTPException):
         super().__init__(status_code=501, detail="Not Implemented")
 
 
-
-class InvalidValueException(HTTPException):
+class InvalidValueException(HTTPException, ValueError):
     """
     Exception raised when an input value does not conform to the expected schema.
     """
