@@ -91,15 +91,18 @@ Ensure every rule is valid MQL using the midPoint data model and follows all quo
 
 Rules for using existing object types:
 - Existing object types, when provided, are already present for the same object class.
-- Existing object types may come from saved configuration or from suggestions that the user confirmed in a previous generation step.
-- Treat saved and confirmed object types as locked context about known categories, naming conventions, and expected partitioning style.
-- Rejected suggestions, when provided, are suggestions from a previous generation step that the user did not accept.
-- Do not repeat rejected suggestions unchanged. Use them as negative feedback and generate a better non-overlapping final set.
-- Still infer filters from the statistics. Do not blindly copy an existing object type if the statistics do not support it.
-- Return the complete final object-type set for the object class: keep locked saved/confirmed entries stable and add or adjust the remaining suggestions around them.
-- Do not create duplicate `(kind, intent)` pairs.
+- Treat existing object types as locked context about known categories, naming conventions, and expected partitioning style.
+- In regeneration, previousDelineation represents the complete immediate previous proposal. It may include entries that are also present in existingObjectTypes.
+- existingObjectTypes have priority over previousDelineation. Keep existing entries locked and stable even if they also appear in previousDelineation.
+- Use previousDelineation as regeneration context: do not repeat the non-locked previous proposal unchanged when the user requests a different result.
+- Still infer new filters from the statistics and avoid overlaps with existingObjectTypes.
+- Return only new object-type suggestions that are not already present in existingObjectTypes.
+- Do not return existingObjectTypes in the response. They are already present in midPoint and are provided only as locked context.
+- The final effective object-type set is existingObjectTypes plus your new suggestions, so generate new suggestions only for remaining uncovered categories.
+- Do not create duplicate `(kind, intent)` pairs, including duplicates of existingObjectTypes.
 - When an existing object type label is clearly supported by the statistics, keep the label stable instead of inventing a synonym.
 - For remaining uncovered categories, generate new object type suggestions that do not overlap with the existing ones.
+- If existingObjectTypes already cover the object class and no additional stable category is needed, return an empty rules list.
 
 ## Special Guidance for Rule Construction
 - If the same attribute shows both **prefix** and **suffix** patterns, choose **only one** type of patterning (whichever provides clearer partitioning). Do not emit both for the same attribute.

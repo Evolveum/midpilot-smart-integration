@@ -46,22 +46,22 @@ def _object_type_context_item(suggestion: ObjectTypeSuggestion) -> dict:
 
 def build_existing_object_types_context(req: SuggestObjectTypeRequest) -> str:
     """
-    Build the explicit saved/confirmed/rejected object-type context used by regeneration prompts.
+    Build the explicit existing object-type context used by generation prompts.
     Returns a short plain-text marker when no context was supplied so the prompt remains deterministic.
     """
-    saved = [_object_type_context_item(item) for item in (req.savedObjectTypes or [])]
-    confirmed = [_object_type_context_item(item) for item in (req.confirmedSuggestions or [])]
-    rejected = [_object_type_context_item(item) for item in (req.rejectedSuggestions or [])]
+    existing = [_object_type_context_item(item) for item in (req.existingObjectTypes or [])]
 
-    if not saved and not confirmed and not rejected:
+    if not existing:
         return "No existing object type context was provided."
 
     payload = {
-        "savedObjectTypes": saved,
-        "confirmedSuggestions": confirmed,
-        "rejectedSuggestions": rejected,
+        "existingObjectTypes": existing,
     }
     return "```json\n" + pretty_json(payload) + "\n```"
+
+
+def _object_type_key(suggestion: ObjectTypeSuggestion) -> tuple[str, str]:
+    return suggestion.kind, suggestion.intent
 
 
 def build_feedback_messages(validation_errors) -> List[BaseMessage]:
@@ -117,10 +117,16 @@ def build_regeneration_messages(
     items = []
     for d in previous_delineations:
         entry: dict = {"kind": d.kind, "intent": d.intent}
+        if d.displayName:
+            entry["displayName"] = d.displayName
+        if d.description:
+            entry["description"] = d.description
         if d.filter:
             entry["filter"] = d.filter
         if d.baseContextFilter:
             entry["baseContextFilter"] = d.baseContextFilter
+        if d.baseContextObjectClassName:
+            entry["baseContextObjectClassName"] = d.baseContextObjectClassName
         items.append(entry)
     prev_json = "```json\n" + pretty_json({"previousDelineation": items}) + "\n```"
 
@@ -131,8 +137,11 @@ def build_regeneration_messages(
                 content=(
                     "\n## Regeneration Request: New Data Split\n"
                     "The current partitioning is incorrect — the suggested delineation rules do not correctly split the data.\n"
-                    "Generate a **completely different** set of delineation rules using a different partitioning strategy. "
-                    "Do NOT replicate the same split logic as the previous suggestions above."
+                    "Use existingObjectTypes as locked accepted context, but do not return them. "
+                    "For the remaining non-locked suggestions, generate a **different** set of delineation rules "
+                    "using a better partitioning strategy. Do NOT replicate the same split logic as the previous "
+                    "non-locked suggestions above. Return only new object types that are not already present in "
+                    "existingObjectTypes."
                 )
             ),
         ]
@@ -143,13 +152,16 @@ def build_regeneration_messages(
             HumanMessage(
                 content=(
                     "\n## MANDATORY FILTER REPLACEMENT\n"
-                    "The `(kind, intent)` labels above are correct, but every filter expression must be replaced.\n\n"
+                    "The `(kind, intent)` labels above are correct, but filters from previousDelineation must be replaced "
+                    "unless the same entry is also provided as a locked existingObjectTypes item.\n\n"
                     "**Rules you MUST follow:**\n"
-                    "1. Keep exactly the same `kind` and `intent` values as shown above.\n"
-                    "2. Treat all `filter` and `baseContextFilter` values above as **invalid** — do not copy either of them.\n"
+                    "1. Use existingObjectTypes as locked context and do not return them.\n"
+                    "2. For non-locked previousDelineation entries, keep exactly the same `kind` and `intent` values as shown above.\n"
+                    "3. Treat non-locked `filter` and `baseContextFilter` values above as **invalid** — do not copy either of them.\n"
                     "   This includes both MQL filter expressions and any base context (DN) filters.\n"
-                    "3. Derive completely new MQL filter expressions by re-analysing the statistics from scratch.\n"
-                    "4. If no better filter can be found for a rule, use `filter: null` rather than repeating the old one."
+                    "4. Derive completely new MQL filter expressions by re-analysing the statistics from scratch.\n"
+                    "5. If no better filter can be found for a rule, use `filter: null` rather than repeating the old one.\n"
+                    "6. Return only new object types that are not already present in existingObjectTypes."
                 )
             ),
         ]
@@ -197,6 +209,7 @@ async def suggest_delineation(req: SuggestObjectTypeRequest) -> SuggestObjectTyp
         raise LLMResponseValidationException() from exc
 
     # 4) Build response
+    existing_keys = {_object_type_key(item) for item in (req.existingObjectTypes or [])}
     suggestions = [
         ObjectTypeSuggestion(
             kind=rule.kind,
@@ -207,6 +220,7 @@ async def suggest_delineation(req: SuggestObjectTypeRequest) -> SuggestObjectTyp
             baseContextFilter=getattr(rule, "baseContextFilter", None),
         )
         for rule in delineation.object_class.rules
+        if (rule.kind, rule.intent) not in existing_keys
     ]
 
     return SuggestObjectTypeResponse(objectType=suggestions)

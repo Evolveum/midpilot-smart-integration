@@ -10,12 +10,14 @@ import pytest
 from src.common.errors import LLMResponseValidationException
 from src.modules.object_type.schema import (
     ObjectTypeSuggestion,
+    RegenerateMode,
     SuggestObjectTypeRequest,
     SuggestObjectTypeResponse,
 )
 from src.modules.object_type.service import (
     build_existing_object_types_context,
     build_object_type_prompt_data,
+    build_regeneration_messages,
     suggest_delineation,
 )
 from test.unit.modules.utils import response_mock
@@ -128,35 +130,33 @@ def test_build_existing_object_types_context_empty():
     assert build_existing_object_types_context(request) == "No existing object type context was provided."
 
 
-def test_build_existing_object_types_context_with_saved_confirmed_rejected():
+def test_build_existing_object_types_context_with_existing():
     req = SuggestObjectTypeRequest(
         **{
             **_BASIC_REQ,
-            "savedObjectTypes": [
+            "existingObjectTypes": [
                 {
                     "kind": "entitlement",
                     "intent": "critical",
                     "displayName": "Critical Entitlements",
-                    "description": "Already saved object type.",
+                    "description": "Existing object type.",
                     "filter": ["c:attributes/ri:groupType = -2147483646.0"],
-                }
-            ],
-            "confirmedSuggestions": [
+                },
                 {
                     "kind": "entitlement",
                     "intent": "distribution",
                     "displayName": "Distribution Entitlements",
-                    "description": "Accepted previous suggestion.",
+                    "description": "Existing object type.",
                     "filter": ["c:attributes/ri:groupType = 8.0"],
-                }
+                },
             ],
-            "rejectedSuggestions": [
+            "previousDelineation": [
                 {
                     "kind": "entitlement",
                     "intent": "genericGroup",
                     "displayName": "Generic Group",
-                    "description": "Rejected previous suggestion.",
-                    "filter": ["c:attributes/ri:dn contains \"ou=Groups\""],
+                    "description": "Previous unconfirmed suggestion.",
+                    "filter": ['c:attributes/ri:dn contains "ou=Groups"'],
                 }
             ],
         }
@@ -168,34 +168,72 @@ def test_build_existing_object_types_context_with_saved_confirmed_rejected():
     assert context.endswith("\n```")
     payload = json.loads(context.removeprefix("```json\n").removesuffix("\n```"))
     assert payload == {
-        "savedObjectTypes": [
+        "existingObjectTypes": [
             {
                 "kind": "entitlement",
                 "intent": "critical",
                 "displayName": "Critical Entitlements",
-                "description": "Already saved object type.",
+                "description": "Existing object type.",
                 "filter": ["c:attributes/ri:groupType = -2147483646.0"],
-            }
-        ],
-        "confirmedSuggestions": [
+            },
             {
                 "kind": "entitlement",
                 "intent": "distribution",
                 "displayName": "Distribution Entitlements",
-                "description": "Accepted previous suggestion.",
+                "description": "Existing object type.",
                 "filter": ["c:attributes/ri:groupType = 8.0"],
-            }
-        ],
-        "rejectedSuggestions": [
-            {
-                "kind": "entitlement",
-                "intent": "genericGroup",
-                "displayName": "Generic Group",
-                "description": "Rejected previous suggestion.",
-                "filter": ["c:attributes/ri:dn contains \"ou=Groups\""],
-            }
+            },
         ],
     }
+
+
+def test_build_regeneration_messages_include_previous_delineation():
+    previous = [
+        ObjectTypeSuggestion(
+            kind="entitlement",
+            intent="genericGroup",
+            displayName="Generic Group",
+            description="Previous unconfirmed suggestion.",
+            filter=['c:attributes/ri:dn contains "ou=Groups"'],
+        )
+    ]
+
+    messages = build_regeneration_messages(RegenerateMode.NEW_DATA_SPLIT, previous)
+
+    assert len(messages) == 2
+    assert "previousDelineation" in messages[0].content
+    assert "genericGroup" in messages[0].content
+    assert "Generic Group" in messages[0].content
+    assert "do not return them" in messages[1].content
+    assert "different" in messages[1].content
+
+
+_EXISTING_AND_NEW_RULE_JSON = json.dumps(
+    {
+        "object_class": {
+            "name": "ri:group",
+            "rules": [
+                {
+                    "kind": "entitlement",
+                    "intent": "critical",
+                    "displayName": "Critical Entitlements",
+                    "description": "Existing object type repeated by the model.",
+                    "filter": ["c:attributes/ri:groupType = -2147483646.0"],
+                    "baseContextFilter": None,
+                },
+                {
+                    "kind": "entitlement",
+                    "intent": "distribution",
+                    "displayName": "Distribution Entitlements",
+                    "description": "New object type suggestion.",
+                    "filter": ["c:attributes/ri:groupType = 8.0"],
+                    "baseContextFilter": None,
+                },
+            ],
+        }
+    },
+    indent=2,
+)
 
 
 _SINGLE_RULE_JSON = json.dumps(
@@ -246,6 +284,41 @@ async def test_suggest_delineation_single_rule():
 async def test_suggest_delineation_no_rules_returns_empty():
     resp = await suggest_delineation(request)
     assert resp.objectType == []
+
+
+@pytest.mark.asyncio
+@patch("src.modules.object_type.service.get_default_llm", response_mock(_EXISTING_AND_NEW_RULE_JSON))
+async def test_suggest_delineation_filters_existing_object_types_from_response():
+    req = SuggestObjectTypeRequest(
+        **{
+            **_BASIC_REQ,
+            "existingObjectTypes": [
+                {
+                    "kind": "entitlement",
+                    "intent": "critical",
+                    "displayName": "Critical Entitlements",
+                    "description": "Existing object type.",
+                    "filter": ["c:attributes/ri:groupType = -2147483646.0"],
+                }
+            ],
+        }
+    )
+
+    resp = await suggest_delineation(req)
+
+    assert resp == SuggestObjectTypeResponse(
+        objectType=[
+            ObjectTypeSuggestion(
+                kind="entitlement",
+                intent="distribution",
+                displayName="Distribution Entitlements",
+                description="New object type suggestion.",
+                filter=["c:attributes/ri:groupType = 8.0"],
+                baseContextFilter=None,
+                baseContextObjectClassName=None,
+            )
+        ]
+    )
 
 
 @pytest.mark.asyncio
