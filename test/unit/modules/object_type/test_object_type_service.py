@@ -44,15 +44,15 @@ _FULL_REQ = {
         "name": "ri:group",
         "description": "Contains group entries",
         "attribute": [
-            {"name": "c:attributes/ri:objectClass", "type": "xsd:string", "minOccurs": 1, "maxOccurs": 1},
-            {"name": "c:attributes/ri:groupType", "type": "xsd:double", "minOccurs": 1, "maxOccurs": 1},
-            {"name": "c:attributes/ri:adminDescription", "type": "xsd:string", "minOccurs": 0, "maxOccurs": 1},
+            {"name": "attributes/ri:objectClass", "type": "xsd:string", "minOccurs": 1, "maxOccurs": 1},
+            {"name": "attributes/ri:groupType", "type": "xsd:double", "minOccurs": 1, "maxOccurs": 1},
+            {"name": "attributes/ri:adminDescription", "type": "xsd:string", "minOccurs": 0, "maxOccurs": 1},
         ],
     },
     "statistics": {
         "attribute": [
             {
-                "ref": "c:attributes/ri:groupType",
+                "ref": "attributes/ri:groupType",
                 "uniqueValueCount": 4,
                 "missingValueCount": 0,
                 "valueCount": [
@@ -67,7 +67,7 @@ _FULL_REQ = {
         ],
         "attributeTuple": [
             {
-                "ref": ["c:attributes/ri:loginShell", "c:attributes/ri:objectClass"],
+                "ref": ["attributes/ri:loginShell", "attributes/ri:objectClass"],
                 "tupleCount": [
                     {"value": ["false", "user"], "count": 872},
                     {"value": ["true", "user"], "count": 828},
@@ -86,15 +86,15 @@ def test_build_full_object_type_prompt_data_empty():
         "objectClass": "ri:group",
         "schema": {
             "attributes": [
-                {"name": "c:attributes/ri:objectClass", "type": "xsd:string"},
-                {"name": "c:attributes/ri:groupType", "type": "xsd:double"},
-                {"name": "c:attributes/ri:adminDescription", "type": "xsd:string"},
+                {"name": "attributes/ri:objectClass", "type": "xsd:string"},
+                {"name": "attributes/ri:groupType", "type": "xsd:double"},
+                {"name": "attributes/ri:adminDescription", "type": "xsd:string"},
             ],
         },
         "count": 1670,
         "statistics": [
             {
-                "column": "c:attributes/ri:groupType",
+                "column": "attributes/ri:groupType",
                 "uniqueCount": 4,
                 "uniqueRatio": 0.0023952095808383233,
                 "missingCount": 0,
@@ -112,7 +112,7 @@ def test_build_full_object_type_prompt_data_empty():
         ],
         "crosstabs": [
             {
-                "ref": ("c:attributes/ri:loginShell", "c:attributes/ri:objectClass"),
+                "ref": ("attributes/ri:loginShell", "attributes/ri:objectClass"),
                 "counts": [
                     {"count": 872, "value": ("false", "user")},
                     {"count": 828, "value": ("true", "user")},

@@ -61,12 +61,12 @@ async def suggest_extension(req: SuggestExtensionRequest) -> SuggestExtensionRes
     - Parse the structured response.
     - Post-process: trim, validate against input attribute names, de-duplicate while preserving order.
     - Return the selected attribute names AS-IS in the original resource namespace, e.g.,
-      ``c:attributes/ri:personalNumber``.
+      ``attributes/ri:personalNumber``.
 
     :param req: Request containing the application schema with UNMAPPED attributes
                 under ``applicationSchema.attribute``.
     :return: ``SuggestExtensionResponse`` with resource attribute names as returned by the LLM
-             (after filtering/deduplication), e.g., ``c:attributes/ri:personalNumber``.
+             (after filtering/deduplication), e.g., ``attributes/ri:personalNumber``.
     """
     variables = _build_extension_prompt_data(req)
 

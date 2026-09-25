@@ -92,10 +92,10 @@ class FocusType(str, Enum):
     Enumeration of possible focus types for suggestions.
     """
 
-    UserType = "c:UserType"
-    RoleType = "c:RoleType"
-    OrgType = "c:OrgType"
-    ServiceType = "c:ServiceType"
+    UserType = "UserType"
+    RoleType = "RoleType"
+    OrgType = "OrgType"
+    ServiceType = "ServiceType"
 
 
 class MidpointSchema(BaseSchema):

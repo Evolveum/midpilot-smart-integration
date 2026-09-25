@@ -18,7 +18,7 @@ real_email_description = '<xsd:documentation xmlns:xsd="http://www.w3.org/2001/X
         ("<p>Some text</p>", "Some text"),
         ('<div class="x">Hello</div>', "Hello"),
         ('<div    class="x"  >Hello</div>', "Hello"),
-        ("<c:UserType>Example</c:UserType>", "Example"),
+        ("<UserType>Example</UserType>", "Example"),
         # Mathematical comparisons should remain untouched
         ("x>2 and a<b", "x>2 and a<b"),
         ("x<a and a>b", "x<a and a>b"),
@@ -78,7 +78,7 @@ def test_application_schema_description_is_cleaned():
 def test_midpoint_schema_description_is_cleaned_with_namespace():
     mp = MidpointSchema(
         name=FocusType.UserType,
-        description="<c:UserType>User type entity</c:UserType>",
+        description="<UserType>User type entity</UserType>",
         attribute=[
             BaseSchemaAttribute(
                 name="cn", type="xsd:string", description="Common <i>name</i>", minOccurs=0, maxOccurs=1

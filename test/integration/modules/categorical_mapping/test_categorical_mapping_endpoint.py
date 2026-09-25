@@ -15,7 +15,7 @@ def test_suggest_categorical_mapping_endpoint_shape():
     payload = {
         "applicationAttribute": {"name": "ri:status", "type": "xsd:string", "minOccurs": 0, "maxOccurs": 1},
         "midPointAttribute": {
-            "name": "c:activation/c:administrativeStatus",
+            "name": "activation/administrativeStatus",
             "type": "xsd:string",
             "minOccurs": 0,
             "maxOccurs": 1,
@@ -46,7 +46,7 @@ def test_suggest_categorical_mapping_endpoint_lockout():
     payload = {
         "applicationAttribute": {"name": "ri:lockoutStatus", "type": "xsd:string", "minOccurs": 0, "maxOccurs": 1},
         "midPointAttribute": {
-            "name": "c:activation/c:lockoutStatus",
+            "name": "activation/lockoutStatus",
             "type": "xsd:string",
             "minOccurs": 0,
             "maxOccurs": 1,
@@ -68,7 +68,7 @@ def test_suggest_categorical_mapping_endpoint_empty_counts():
     payload = {
         "applicationAttribute": {"name": "ri:status", "type": "xsd:string", "minOccurs": 0, "maxOccurs": 1},
         "midPointAttribute": {
-            "name": "c:activation/c:administrativeStatus",
+            "name": "activation/administrativeStatus",
             "type": "xsd:string",
             "minOccurs": 0,
             "maxOccurs": 1,
@@ -90,7 +90,7 @@ def test_suggest_categorical_mapping_endpoint_no_meaningful_mapping():
     payload = {
         "applicationAttribute": {"name": "ri:departmentCode", "type": "xsd:string", "minOccurs": 0, "maxOccurs": 1},
         "midPointAttribute": {
-            "name": "c:activation/c:administrativeStatus",
+            "name": "activation/administrativeStatus",
             "type": "xsd:string",
             "minOccurs": 0,
             "maxOccurs": 1,
@@ -123,7 +123,7 @@ def test_suggest_categorical_mapping_endpoint_outbound_not_supported():
     payload = {
         "applicationAttribute": {"name": "ri:status", "type": "xsd:string", "minOccurs": 0, "maxOccurs": 1},
         "midPointAttribute": {
-            "name": "c:activation/c:administrativeStatus",
+            "name": "activation/administrativeStatus",
             "type": "xsd:string",
             "minOccurs": 0,
             "maxOccurs": 1,

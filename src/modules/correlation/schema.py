@@ -41,7 +41,7 @@ class SuggestExtensionCorrelatorsRequest(BaseModel):
     schemaDescription: Optional[str] = Field(None, description="Optional description of the midPoint schema.")
     extensionAttributes: List[BaseSchemaAttribute] = Field(
         ...,
-        description="MidPoint extension attributes (e.g., c:extension/ext:personalNumber) considered for correlation.",
+        description="MidPoint extension attributes (e.g., extension/ext:personalNumber) considered for correlation.",
     )
     attributeStats: Dict[str, BasicAttributeStats] = Field(
         ...,
@@ -51,25 +51,25 @@ class SuggestExtensionCorrelatorsRequest(BaseModel):
     model_config = {
         "json_schema_extra": {
             "example": {
-                "schemaName": "c:Employee",
+                "schemaName": "Employee",
                 "schemaDescription": "Employee object type with HR-driven extensions.",
                 "extensionAttributes": [
                     {
-                        "name": "c:extension/ext:personalNumber",
+                        "name": "extension/ext:personalNumber",
                         "type": "xsd:string",
                         "description": "Unique personal number assigned by HR.",
                         "minOccurs": 0,
                         "maxOccurs": 1,
                     },
                     {
-                        "name": "c:extension/ext:email",
+                        "name": "extension/ext:email",
                         "type": "xsd:string",
                         "description": "Corporate email address.",
                         "minOccurs": 0,
                         "maxOccurs": 1,
                     },
                     {
-                        "name": "c:extension/ext:phone",
+                        "name": "extension/ext:phone",
                         "type": "xsd:string",
                         "description": "Phone number with optional country code.",
                         "minOccurs": 0,
@@ -77,9 +77,9 @@ class SuggestExtensionCorrelatorsRequest(BaseModel):
                     },
                 ],
                 "attributeStats": {
-                    "c:extension/ext:personalNumber": {"totalCount": 10000, "nuniq": 9950, "nmissing": 50},
-                    "c:extension/ext:email": {"totalCount": 10000, "nuniq": 9800, "nmissing": 200},
-                    "c:extension/ext:phone": {"totalCount": 10000, "nuniq": 8500, "nmissing": 1500},
+                    "extension/ext:personalNumber": {"totalCount": 10000, "nuniq": 9950, "nmissing": 50},
+                    "extension/ext:email": {"totalCount": 10000, "nuniq": 9800, "nmissing": 200},
+                    "extension/ext:phone": {"totalCount": 10000, "nuniq": 8500, "nmissing": 1500},
                 },
             }
         }
@@ -93,7 +93,7 @@ class SuggestExtensionCorrelatorsResponse(BaseModel):
 
     correlators: List[str] = Field(
         ...,
-        description="List of attribute names proposed for correlators (e.g., c:extension/ext:personalNumber).",
+        description="List of attribute names proposed for correlators (e.g., extension/ext:personalNumber).",
     )
     metadata: ResponseMetadata = Field(
         default_factory=get_response_metadata,
@@ -104,8 +104,8 @@ class SuggestExtensionCorrelatorsResponse(BaseModel):
         "json_schema_extra": {
             "example": {
                 "correlators": [
-                    "c:extension/ext:personalNumber",
-                    "c:extension/ext:email",
+                    "extension/ext:personalNumber",
+                    "extension/ext:email",
                 ]
             }
         }

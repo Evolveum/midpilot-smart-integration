@@ -128,22 +128,22 @@ class SuggestObjectTypeRequest(BaseModel):
                     "name": "ri:group",
                     "description": "Contains group entries",
                     "attribute": [
-                        {"name": "c:attributes/ri:loginShell", "type": "xsd:string", "minOccurs": 1, "maxOccurs": 1},
-                        {"name": "c:attributes/ri:groupType", "type": "xsd:double", "minOccurs": 1, "maxOccurs": 1},
+                        {"name": "attributes/ri:loginShell", "type": "xsd:string", "minOccurs": 1, "maxOccurs": 1},
+                        {"name": "attributes/ri:groupType", "type": "xsd:double", "minOccurs": 1, "maxOccurs": 1},
                         {
-                            "name": "c:activation/c:administrativeStatus",
+                            "name": "activation/administrativeStatus",
                             "type": "xsd:string",
                             "minOccurs": 0,
                             "maxOccurs": 1,
                         },
                         {
-                            "name": "c:credentials/c:password/c:value",
+                            "name": "credentials/password/value",
                             "type": "xsd:string",
                             "minOccurs": 0,
                             "maxOccurs": 1,
                         },
                         {
-                            "name": "c:attributes/c=ri:dn",
+                            "name": "attributes/c=ri:dn",
                             "type": "xsd:string",
                             "minOccurs": 1,
                             "maxOccurs": 1,
@@ -154,7 +154,7 @@ class SuggestObjectTypeRequest(BaseModel):
                 "statistics": {
                     "attribute": [
                         {
-                            "ref": "c:attributes/ri:groupType",
+                            "ref": "attributes/ri:groupType",
                             "uniqueValueCount": 4,
                             "missingValueCount": 0,
                             "valueCount": [
@@ -163,7 +163,7 @@ class SuggestObjectTypeRequest(BaseModel):
                             ],
                         },
                         {
-                            "ref": "c:attributes/ri:dn",
+                            "ref": "attributes/ri:dn",
                             "uniqueValueCount": 1670,
                             "missingValueCount": 0,
                             "valuePatternCount": [
@@ -174,7 +174,7 @@ class SuggestObjectTypeRequest(BaseModel):
                     ],
                     "attributeTuple": [
                         {
-                            "ref": ["c:attributes/ri:loginShell", "c:activation/c:administrativeStatus"],
+                            "ref": ["attributes/ri:loginShell", "activation/administrativeStatus"],
                             "tupleCount": [
                                 {"value": ["true", "active"], "count": 872},
                                 {"value": ["false", "frozen"], "count": 828},
@@ -191,7 +191,7 @@ class SuggestObjectTypeRequest(BaseModel):
                             "intent": "security",
                             "displayName": "Security Entitlement",
                             "description": "…",
-                            "filter": ["c:attributes/ri:groupType = -2147483646.0"],
+                            "filter": ["attributes/ri:groupType = -2147483646.0"],
                         },
                         "filterErrors": ["Unknown attribute ri:groupType"],
                     }
@@ -270,21 +270,21 @@ class SuggestObjectTypeResponse(BaseModel):
                         "intent": "security",
                         "displayName": "Security Entitlement",
                         "description": "Grants or restricts access to security-related features, permissions, or resources within the system. This entitlement determines a user's or application's authorization to perform specific security-sensitive actions.",
-                        "filter": ["c:attributes/ri:groupType = -2147483646.0"],
+                        "filter": ["attributes/ri:groupType = -2147483646.0"],
                     },
                     {
                         "kind": "entitlement",
                         "intent": "distribution",
                         "displayName": "Entitlement Distribution",
                         "description": "Manages the allocation and delivery of entitlements (such as rights, access, or benefits) to designated recipients.",
-                        "filter": ["c:attributes/ri:groupType = 8.0"],
+                        "filter": ["attributes/ri:groupType = 8.0"],
                     },
                     {
                         "kind": "generic",
                         "intent": "organizationalUnitSubset",
                         "displayName": "Organizational Unit (Projects Base Context)",
                         "description": "Objects under the LDAP organizational unit 'projects' base context. Uses baseContextFilter on dn to scope the dataset.",
-                        "baseContextFilter": "c:attributes/ri:dn = ou=projects,dc=example,dc=com",
+                        "baseContextFilter": "attributes/ri:dn = ou=projects,dc=example,dc=com",
                     },
                 ]
             }

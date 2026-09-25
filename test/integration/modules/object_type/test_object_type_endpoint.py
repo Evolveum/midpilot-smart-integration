@@ -38,15 +38,15 @@ def test_suggest_object_type_success():
             "name": "ri:group",
             "description": "Contains group entries",
             "attribute": [
-                {"name": "c:attributes/ri:objectClass", "type": "xsd:string", "minOccurs": 0, "maxOccurs": 1},
-                {"name": "c:attributes/ri:groupType", "type": "xsd:double", "minOccurs": 0, "maxOccurs": 1},
-                {"name": "c:attributes/ri:adminDescription", "type": "xsd:string", "minOccurs": 0, "maxOccurs": 1},
+                {"name": "attributes/ri:objectClass", "type": "xsd:string", "minOccurs": 0, "maxOccurs": 1},
+                {"name": "attributes/ri:groupType", "type": "xsd:double", "minOccurs": 0, "maxOccurs": 1},
+                {"name": "attributes/ri:adminDescription", "type": "xsd:string", "minOccurs": 0, "maxOccurs": 1},
             ],
         },
         "statistics": {
             "attribute": [
                 {
-                    "ref": "c:attributes/ri:groupType",
+                    "ref": "attributes/ri:groupType",
                     "uniqueValueCount": 4,
                     "missingValueCount": 0,
                     "valueCount": [
@@ -61,7 +61,7 @@ def test_suggest_object_type_success():
             ],
             "attributeTuple": [
                 {
-                    "ref": ["c:attributes/ri:loginShell", "c:attributes/ri:objectClass"],
+                    "ref": ["attributes/ri:loginShell", "attributes/ri:objectClass"],
                     "tupleCount": [
                         {"value": ["false", "user"], "count": 872},
                         {"value": ["true", "user"], "count": 828},
@@ -96,12 +96,12 @@ def test_suggest_object_type_with_dn_attribute():
             "name": "ri:user",
             "description": "Contains user entries",
             "attribute": [
-                {"name": "c:attributes/ri:objectClass", "type": "xsd:string", "minOccurs": 0, "maxOccurs": 1},
-                {"name": "c:attributes/ri:username", "type": "xsd:string", "minOccurs": 1, "maxOccurs": 1},
-                {"name": "c:attributes/ri:email", "type": "xsd:string", "minOccurs": 0, "maxOccurs": 1},
-                {"name": "c:attributes/ri:isActive", "type": "xsd:boolean", "minOccurs": 0, "maxOccurs": 1},
+                {"name": "attributes/ri:objectClass", "type": "xsd:string", "minOccurs": 0, "maxOccurs": 1},
+                {"name": "attributes/ri:username", "type": "xsd:string", "minOccurs": 1, "maxOccurs": 1},
+                {"name": "attributes/ri:email", "type": "xsd:string", "minOccurs": 0, "maxOccurs": 1},
+                {"name": "attributes/ri:isActive", "type": "xsd:boolean", "minOccurs": 0, "maxOccurs": 1},
                 {
-                    "name": "c:attributes/ri:dn",
+                    "name": "attributes/ri:dn",
                     "type": "xsd:string",
                     "minOccurs": 1,
                     "maxOccurs": 1,
@@ -112,13 +112,13 @@ def test_suggest_object_type_with_dn_attribute():
         "statistics": {
             "attribute": [
                 {
-                    "ref": "c:attributes/ri:objectClass",
+                    "ref": "attributes/ri:objectClass",
                     "uniqueValueCount": 1,
                     "missingValueCount": 0,
                     "valueCount": [{"value": "user", "count": 1620}],
                 },
                 {
-                    "ref": "c:attributes/ri:isActive",
+                    "ref": "attributes/ri:isActive",
                     "uniqueValueCount": 2,
                     "missingValueCount": 50,
                     "valueCount": [
@@ -127,12 +127,12 @@ def test_suggest_object_type_with_dn_attribute():
                     ],
                 },
                 {
-                    "ref": "c:attributes/ri:email",
+                    "ref": "attributes/ri:email",
                     "uniqueValueCount": 1610,
                     "missingValueCount": 10,
                 },
                 {
-                    "ref": "c:attributes/ri:dn",
+                    "ref": "attributes/ri:dn",
                     "uniqueValueCount": 1620,
                     "missingValueCount": 0,
                     "valuePatternCount": [
@@ -143,7 +143,7 @@ def test_suggest_object_type_with_dn_attribute():
             ],
             "attributeTuple": [
                 {
-                    "ref": ["c:attributes/ri:isActive", "c:attributes/ri:objectClass"],
+                    "ref": ["attributes/ri:isActive", "attributes/ri:objectClass"],
                     "tupleCount": [
                         {"value": ["true", "user"], "count": 1150},
                         {"value": ["false", "user"], "count": 420},
@@ -176,14 +176,14 @@ def test_suggest_object_type_new_filter_regen():
             "name": "ri:group",
             "description": "Contains group entries",
             "attribute": [
-                {"name": "c:attributes/ri:objectClass", "type": "xsd:string", "minOccurs": 0, "maxOccurs": 1},
-                {"name": "c:attributes/ri:groupType", "type": "xsd:double", "minOccurs": 0, "maxOccurs": 1},
+                {"name": "attributes/ri:objectClass", "type": "xsd:string", "minOccurs": 0, "maxOccurs": 1},
+                {"name": "attributes/ri:groupType", "type": "xsd:double", "minOccurs": 0, "maxOccurs": 1},
             ],
         },
         "statistics": {
             "attribute": [
                 {
-                    "ref": "c:attributes/ri:groupType",
+                    "ref": "attributes/ri:groupType",
                     "uniqueValueCount": 4,
                     "missingValueCount": 0,
                     "valueCount": [
@@ -204,7 +204,7 @@ def test_suggest_object_type_new_filter_regen():
                 "intent": "security",
                 "displayName": "Security Entitlement",
                 "description": "Previous suggestion",
-                "filter": ["c:attributes/ri:groupType = -2147483646.0"],
+                "filter": ["attributes/ri:groupType = -2147483646.0"],
                 "baseContextFilter": None,
             }
         ],

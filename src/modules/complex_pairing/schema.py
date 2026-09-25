@@ -16,7 +16,7 @@ from ...common.schema import ResponseMetadata, get_response_metadata
 class AttributeValue(BaseModel):
     """Single attribute-value item within one record (instance)."""
 
-    attribute: str = Field(..., description="Attribute path, e.g. 'c:email[*]/value'")
+    attribute: str = Field(..., description="Attribute path, e.g. 'email[*]/value'")
     value: List[str] = Field(..., description="List of values (single-valued => one item)")
 
 
@@ -56,8 +56,8 @@ class ComplexPairingRequest(BaseModel):
                             {
                                 "identifier": "1",
                                 "content": [
-                                    {"attribute": "c:email[*]/value", "value": ["anna.novakova@firma.sk"]},
-                                    {"attribute": "c:email[*]/type", "value": ["work"]},
+                                    {"attribute": "email[*]/value", "value": ["anna.novakova@firma.sk"]},
+                                    {"attribute": "email[*]/type", "value": ["work"]},
                                 ],
                             }
                         ],
@@ -65,8 +65,8 @@ class ComplexPairingRequest(BaseModel):
                             {
                                 "identifier": "A1",
                                 "content": [
-                                    {"attribute": "c:contact/email[*]/address", "value": ["ANNA.NOVAKOVA@FIRMA.SK"]},
-                                    {"attribute": "c:contact/email[*]/category", "value": ["work"]},
+                                    {"attribute": "contact/email[*]/address", "value": ["ANNA.NOVAKOVA@FIRMA.SK"]},
+                                    {"attribute": "contact/email[*]/category", "value": ["work"]},
                                 ],
                             }
                         ],
@@ -76,15 +76,15 @@ class ComplexPairingRequest(BaseModel):
                             {
                                 "identifier": "2",
                                 "content": [
-                                    {"attribute": "c:email[*]/value", "value": ["adam.kral4@startup.io"]},
-                                    {"attribute": "c:email[*]/type", "value": ["work"]},
+                                    {"attribute": "email[*]/value", "value": ["adam.kral4@startup.io"]},
+                                    {"attribute": "email[*]/type", "value": ["work"]},
                                 ],
                             },
                             {
                                 "identifier": "3",
                                 "content": [
-                                    {"attribute": "c:email[*]/value", "value": ["adam.kral@gmail.com"]},
-                                    {"attribute": "c:email[*]/type", "value": ["personal"]},
+                                    {"attribute": "email[*]/value", "value": ["adam.kral@gmail.com"]},
+                                    {"attribute": "email[*]/type", "value": ["personal"]},
                                 ],
                             },
                         ],
@@ -92,15 +92,15 @@ class ComplexPairingRequest(BaseModel):
                             {
                                 "identifier": "B1",
                                 "content": [
-                                    {"attribute": "c:contact/email[*]/address", "value": ["ADAM.KRAL4@STARTUP.IO"]},
-                                    {"attribute": "c:contact/email[*]/category", "value": ["work"]},
+                                    {"attribute": "contact/email[*]/address", "value": ["ADAM.KRAL4@STARTUP.IO"]},
+                                    {"attribute": "contact/email[*]/category", "value": ["work"]},
                                 ],
                             },
                             {
                                 "identifier": "B2",
                                 "content": [
-                                    {"attribute": "c:contact/email[*]/address", "value": ["adam.kral@gmail.com"]},
-                                    {"attribute": "c:contact/email[*]/category", "value": ["home"]},
+                                    {"attribute": "contact/email[*]/address", "value": ["adam.kral@gmail.com"]},
+                                    {"attribute": "contact/email[*]/category", "value": ["home"]},
                                 ],
                             },
                         ],
@@ -110,8 +110,8 @@ class ComplexPairingRequest(BaseModel):
                             {
                                 "identifier": "4",
                                 "content": [
-                                    {"attribute": "c:email[*]/value", "value": ["jana.nova+sales@evolveum.com"]},
-                                    {"attribute": "c:email[*]/type", "value": ["work"]},
+                                    {"attribute": "email[*]/value", "value": ["jana.nova+sales@evolveum.com"]},
+                                    {"attribute": "email[*]/type", "value": ["work"]},
                                 ],
                             }
                         ],
@@ -119,8 +119,8 @@ class ComplexPairingRequest(BaseModel):
                             {
                                 "identifier": "C7",
                                 "content": [
-                                    {"attribute": "c:contact/email[*]/address", "value": ["jana.nova@firma.sk"]},
-                                    {"attribute": "c:contact/email[*]/category", "value": ["work"]},
+                                    {"attribute": "contact/email[*]/address", "value": ["jana.nova@firma.sk"]},
+                                    {"attribute": "contact/email[*]/category", "value": ["work"]},
                                 ],
                             }
                         ],
@@ -130,15 +130,15 @@ class ComplexPairingRequest(BaseModel):
                             {
                                 "identifier": "5",
                                 "content": [
-                                    {"attribute": "c:email[*]/value", "value": ["marcela.nemcova30@gmail.com"]},
-                                    {"attribute": "c:email[*]/type", "value": ["personal"]},
+                                    {"attribute": "email[*]/value", "value": ["marcela.nemcova30@gmail.com"]},
+                                    {"attribute": "email[*]/type", "value": ["personal"]},
                                 ],
                             },
                             {
                                 "identifier": "6",
                                 "content": [
-                                    {"attribute": "c:email[*]/value", "value": ["marcela.nemcova77@gmail.com"]},
-                                    {"attribute": "c:email[*]/type", "value": ["work"]},
+                                    {"attribute": "email[*]/value", "value": ["marcela.nemcova77@gmail.com"]},
+                                    {"attribute": "email[*]/type", "value": ["work"]},
                                 ],
                             },
                         ],
@@ -147,10 +147,10 @@ class ComplexPairingRequest(BaseModel):
                                 "identifier": "M30",
                                 "content": [
                                     {
-                                        "attribute": "c:contact/email[*]/address",
+                                        "attribute": "contact/email[*]/address",
                                         "value": ["marcelanemcova30@gmail.com"],
                                     },
-                                    {"attribute": "c:contact/email[*]/category", "value": ["home"]},
+                                    {"attribute": "contact/email[*]/category", "value": ["home"]},
                                 ],
                             },
                         ],
@@ -160,8 +160,8 @@ class ComplexPairingRequest(BaseModel):
                             {
                                 "identifier": "7",
                                 "content": [
-                                    {"attribute": "c:email[*]/value", "value": ["kontakt@spolocnost.sk"]},
-                                    {"attribute": "c:email[*]/type", "value": ["work"]},
+                                    {"attribute": "email[*]/value", "value": ["kontakt@spolocnost.sk"]},
+                                    {"attribute": "email[*]/type", "value": ["work"]},
                                 ],
                             }
                         ],
@@ -169,8 +169,8 @@ class ComplexPairingRequest(BaseModel):
                             {
                                 "identifier": "K1",
                                 "content": [
-                                    {"attribute": "c:contact/email[*]/address", "value": ["KONTAKT@SPOLOCNOST.SK"]},
-                                    {"attribute": "c:contact/email[*]/category", "value": ["work"]},
+                                    {"attribute": "contact/email[*]/address", "value": ["KONTAKT@SPOLOCNOST.SK"]},
+                                    {"attribute": "contact/email[*]/category", "value": ["work"]},
                                 ],
                             }
                         ],

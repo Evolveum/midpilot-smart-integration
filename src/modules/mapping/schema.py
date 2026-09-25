@@ -83,24 +83,24 @@ class SuggestMappingRequest(BaseModel):
         "json_schema_extra": {
             "example": {
                 "applicationAttribute": {
-                    "name": "c:attributes/icfs:name",
+                    "name": "attributes/icfs:name",
                     "type": "xsd:string",
                     "minOccurs": 1,
                     "maxOccurs": 1,
                 },
-                "midPointAttribute": {"name": "c:name", "type": "xsd:string", "minOccurs": 0, "maxOccurs": 1},
+                "midPointAttribute": {"name": "name", "type": "xsd:string", "minOccurs": 0, "maxOccurs": 1},
                 "inbound": True,
                 "example": [
                     {
-                        "application": [{"name": "c:attributes/icfs:name", "value": ["jack"]}],
-                        "midPoint": [{"name": "c:name", "value": ["JACK"]}],
+                        "application": [{"name": "attributes/icfs:name", "value": ["jack"]}],
+                        "midPoint": [{"name": "name", "value": ["JACK"]}],
                     },
                     {
-                        "application": [{"name": "c:attributes/icfs:name", "value": ["jim"]}],
-                        "midPoint": [{"name": "c:name", "value": ["JIM"]}],
+                        "application": [{"name": "attributes/icfs:name", "value": ["jim"]}],
+                        "midPoint": [{"name": "name", "value": ["JIM"]}],
                     },
                     {
-                        "midPoint": [{"name": "c:name", "value": ["empty"]}],
+                        "midPoint": [{"name": "name", "value": ["empty"]}],
                     },
                 ],
                 "errorLog": "Optional: Runtime error log from previous attempt.",

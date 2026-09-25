@@ -17,8 +17,8 @@ def normalize_attr_name_for_mel(name: str) -> str:
     """
     Normalize a namespaced MidPoint attribute name into a valid MEL identifier.
 
-    MidPoint attribute names often carry namespace prefixes (e.g. ``c:name``,
-    ``c:extension/ext:personalNumber``, ``c:attributes/ri:username``) which are
+    MidPoint attribute names may carry namespace prefixes (e.g.
+    ``extension/ext:personalNumber``, ``attributes/ri:username``) which are
     invalid as MEL variable names because ``:`` is not a legal identifier
     character. MidPoint resolves the same attributes without the prefix, so
     stripping it is safe.
@@ -26,11 +26,11 @@ def normalize_attr_name_for_mel(name: str) -> str:
     The rule: take the substring after the **last** ``:`` in the name. This
     correctly handles all known patterns:
 
-    - ``c:name``                         → ``name``
-    - ``c:givenName``                    → ``givenName``
-    - ``c:extension/ext:personalNumber`` → ``personalNumber``
-    - ``c:attributes/ri:username``       → ``username``
-    - ``c:attributes/icfs:name``         → ``name``
+    - ``name``                         → ``name``
+    - ``givenName``                    → ``givenName``
+    - ``extension/ext:personalNumber`` → ``personalNumber``
+    - ``attributes/ri:username``       → ``username``
+    - ``attributes/icfs:name``         → ``name``
     - ``givenName`` (no prefix)          → ``givenName`` (unchanged)
     - ``attributes/username`` (path)     → ``username``
     - ``extension/personalNumber`` (path)→ ``personalNumber``

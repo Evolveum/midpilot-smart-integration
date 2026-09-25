@@ -23,12 +23,12 @@ def test_match_schemas_endpoint_shape():
             ],
         },
         "midPointSchema": {
-            "name": "c:UserType",
+            "name": "UserType",
             "description": "Test MidPoint schema",
             "attribute": [
-                {"name": "c:uid", "type": "xsd:string", "minOccurs": 0, "maxOccurs": 1},
-                {"name": "c:emailAddress", "type": "xsd:string", "minOccurs": 0, "maxOccurs": 1},
-                {"name": "c:telephoneNumber", "type": "xsd:string", "minOccurs": 0, "maxOccurs": 1},
+                {"name": "uid", "type": "xsd:string", "minOccurs": 0, "maxOccurs": 1},
+                {"name": "emailAddress", "type": "xsd:string", "minOccurs": 0, "maxOccurs": 1},
+                {"name": "telephoneNumber", "type": "xsd:string", "minOccurs": 0, "maxOccurs": 1},
             ],
         },
     }

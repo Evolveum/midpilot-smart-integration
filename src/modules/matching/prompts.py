@@ -44,27 +44,27 @@ Correlators are MidPoint attributes used to find and link an existing focus obje
 across systems.
 
 Correlator sets:
-- User correlators: `c:name`, `c:emailAddress`, `c:personalNumber`
-- Non-User correlators: `c:name`, `c:identifier`, `c:emailAddress`
+- User correlators: `name`, `emailAddress`, `personalNumber`
+- Non-User correlators: `name`, `identifier`, `emailAddress`
 
 ### Semantic meaning (generalized)
-- `c:name`:
+- `name`:
   treat as the primary identity handle used to find/reconcile the same entity.
   Match username/login handle, principal-style sign-in name, canonical object/account name,
   directory naming identity, alias, service/role/group handle, or provider-specific lookup handle.
-  If a stable key is operationally used as primary lookup identity, it is a plausible `c:name`
+  If a stable key is operationally used as primary lookup identity, it is a plausible `name`
   candidate even if formatted like an identifier.
-- `c:emailAddress`:
+- `emailAddress`:
   treat as routable mailbox/contact identity when used for lookup/linking/notification/ownership.
   Match deliverable mailbox, primary/secondary contact mailbox, alias, recovery/contact mailbox,
   or shared mailbox-style address.
   Include sign-in identifiers only when schema/docs indicate email-shaped identity.
-- `c:personalNumber` (User):
+- `personalNumber` (User):
   treat as workforce/person-record identity key.
   Match HR/staff/personnel/worker number, employee record key, payroll-linked person identifier,
   or organizational person reference used to uniquely link a human record.
   Include generic IDs only when semantics tie them to person identity.
-- `c:identifier` (Non-User):
+- `identifier` (Non-User):
   treat as stable object identity key for Role/Service/Org/Policy-like entities.
   Match immutable/stable object code, system key, reference identifier, entity handle,
   canonical object identity, or canonical directory key used for cross-system reference.

@@ -22,8 +22,8 @@ def test_pairs_json_builds_expected_structure():
                     Record(
                         identifier="1",
                         content=[
-                            AttributeValue(attribute="c:email[*]/value", value=["anna@example.com"]),
-                            AttributeValue(attribute="c:email[*]/type", value=["work"]),
+                            AttributeValue(attribute="email[*]/value", value=["anna@example.com"]),
+                            AttributeValue(attribute="email[*]/type", value=["work"]),
                         ],
                     )
                 ],
@@ -31,8 +31,8 @@ def test_pairs_json_builds_expected_structure():
                     Record(
                         identifier="A1",
                         content=[
-                            AttributeValue(attribute="c:contact/email/address", value=["ANNA@EXAMPLE.COM"]),
-                            AttributeValue(attribute="c:contact/email/category", value=["work"]),
+                            AttributeValue(attribute="contact/email/address", value=["ANNA@EXAMPLE.COM"]),
+                            AttributeValue(attribute="contact/email/category", value=["work"]),
                         ],
                     )
                 ],
@@ -41,13 +41,13 @@ def test_pairs_json_builds_expected_structure():
                 midPoint=[
                     Record(
                         identifier="2",
-                        content=[AttributeValue(attribute="c:email[*]/value", value=["bob@example.com"])],
+                        content=[AttributeValue(attribute="email[*]/value", value=["bob@example.com"])],
                     )
                 ],
                 application=[
                     Record(
                         identifier="B1",
-                        content=[AttributeValue(attribute="c:contact/email/address", value=["BOB@EXAMPLE.COM"])],
+                        content=[AttributeValue(attribute="contact/email/address", value=["BOB@EXAMPLE.COM"])],
                     )
                 ],
             ),
@@ -64,7 +64,7 @@ def test_pairs_json_builds_expected_structure():
     app0 = first["application"][0]
     assert mp0["identifier"] == "1" and app0["identifier"] == "A1"
     assert isinstance(mp0["content"], list) and isinstance(app0["content"], list)
-    assert mp0["content"][0]["attribute"] == "c:email[*]/value"
+    assert mp0["content"][0]["attribute"] == "email[*]/value"
     assert mp0["content"][0]["value"] == ["anna@example.com"]
 
 
@@ -95,8 +95,8 @@ async def test_complex_pairing_parses_llm_output():
                     Record(
                         identifier="1",
                         content=[
-                            AttributeValue(attribute="c:email[*]/value", value=["anna@example.com"]),
-                            AttributeValue(attribute="c:email[*]/type", value=["work"]),
+                            AttributeValue(attribute="email[*]/value", value=["anna@example.com"]),
+                            AttributeValue(attribute="email[*]/type", value=["work"]),
                         ],
                     )
                 ],
@@ -104,8 +104,8 @@ async def test_complex_pairing_parses_llm_output():
                     Record(
                         identifier="A1",
                         content=[
-                            AttributeValue(attribute="c:contact/email/address", value=["ANNA@EXAMPLE.COM"]),
-                            AttributeValue(attribute="c:contact/email/category", value=["work"]),
+                            AttributeValue(attribute="contact/email/address", value=["ANNA@EXAMPLE.COM"]),
+                            AttributeValue(attribute="contact/email/category", value=["work"]),
                         ],
                     )
                 ],

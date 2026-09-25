@@ -17,25 +17,25 @@ from test.unit.modules.utils import response_mock
 
 # Common request payload used across tests
 _req = SuggestExtensionCorrelatorsRequest(
-    schemaName="c:UserType",
+    schemaName="UserType",
     schemaDescription="User object type with HR-driven extensions",
     extensionAttributes=[
         {
-            "name": "c:extension/ext:personalNumber",
+            "name": "extension/ext:personalNumber",
             "type": "xsd:string",
             "description": "Unique personal number assigned by HR.",
             "minOccurs": 0,
             "maxOccurs": 1,
         },
         {
-            "name": "c:extension/ext:email",
+            "name": "extension/ext:email",
             "type": "xsd:string",
             "description": "Corporate email address.",
             "minOccurs": 0,
             "maxOccurs": 1,
         },
         {
-            "name": "c:extension/ext:phone",
+            "name": "extension/ext:phone",
             "type": "xsd:string",
             "description": "Mobile or office phone number.",
             "minOccurs": 0,
@@ -43,9 +43,9 @@ _req = SuggestExtensionCorrelatorsRequest(
         },
     ],
     attributeStats={
-        "c:extension/ext:personalNumber": BasicAttributeStats(totalCount=1000, nuniq=995, nmissing=5),
-        "c:extension/ext:email": BasicAttributeStats(totalCount=1000, nuniq=980, nmissing=20),
-        "c:extension/ext:phone": BasicAttributeStats(totalCount=1000, nuniq=850, nmissing=150),
+        "extension/ext:personalNumber": BasicAttributeStats(totalCount=1000, nuniq=995, nmissing=5),
+        "extension/ext:email": BasicAttributeStats(totalCount=1000, nuniq=980, nmissing=20),
+        "extension/ext:phone": BasicAttributeStats(totalCount=1000, nuniq=850, nmissing=150),
     },
 )
 
@@ -57,8 +57,8 @@ _req = SuggestExtensionCorrelatorsRequest(
         json.dumps(
             {
                 "correlators": [
-                    "c:extension/ext:personalNumber",
-                    "c:extension/ext:email",
+                    "extension/ext:personalNumber",
+                    "extension/ext:email",
                 ]
             }
         )
@@ -67,8 +67,8 @@ _req = SuggestExtensionCorrelatorsRequest(
 async def test_returns_correlators_list():
     resp = await suggest_extension_correlators(_req)
     assert resp.correlators == [
-        "c:extension/ext:personalNumber",
-        "c:extension/ext:email",
+        "extension/ext:personalNumber",
+        "extension/ext:email",
     ]
 
 

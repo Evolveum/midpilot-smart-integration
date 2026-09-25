@@ -36,12 +36,12 @@ def test_quote_by_type_single_and_multivalued():
     "raw_name, expected",
     [
         # Colon-separated (namespace prefix)
-        ("c:name", "name"),
-        ("c:givenName", "givenName"),
-        ("c:familyName", "familyName"),
-        ("c:extension/ext:personalNumber", "personalNumber"),
-        ("c:attributes/ri:username", "username"),
-        ("c:attributes/icfs:name", "name"),
+        ("name", "name"),
+        ("givenName", "givenName"),
+        ("familyName", "familyName"),
+        ("extension/ext:personalNumber", "personalNumber"),
+        ("attributes/ri:username", "username"),
+        ("attributes/icfs:name", "name"),
         ("ext:employeeNumber", "employeeNumber"),
         # Slash-separated (path without namespace)
         ("attributes/username", "username"),

@@ -23,12 +23,12 @@ _AD_JSON_SCHEMA = {
     "distinguishedName": {"type": "xsd:string", "description": "LDAP DN (e.g., OU=Sales,DC=example,DC=com)."},
 }
 _MIDPOINT_JSON_SCHEMA = {
-    "c:uid": {"type": "xsd:string", "description": "Unique user identifier in MidPoint."},
-    "c:name": {"type": "xsd:string", "description": "User's full name."},
-    "c:emailAddress": {"type": "xsd:string", "description": "Email address."},
-    "c:telephoneNumber": {"type": "xsd:string", "description": "Phone number."},
-    "c:organizationalUnit": {"type": "xsd:string", "description": "Organizational unit within MidPoint."},
-    "c:employeeNumber": {"type": "xsd:string", "description": "Employee number for payroll systems."},
+    "uid": {"type": "xsd:string", "description": "Unique user identifier in MidPoint."},
+    "name": {"type": "xsd:string", "description": "User's full name."},
+    "emailAddress": {"type": "xsd:string", "description": "Email address."},
+    "telephoneNumber": {"type": "xsd:string", "description": "Phone number."},
+    "organizationalUnit": {"type": "xsd:string", "description": "Organizational unit within MidPoint."},
+    "employeeNumber": {"type": "xsd:string", "description": "Employee number for payroll systems."},
 }
 
 
@@ -42,7 +42,7 @@ basic_req = MatchSchemaRequest(
         ],
     },
     midPointSchema={
-        "name": "c:UserType",
+        "name": "UserType",
         "description": "MidPoint user type schema",
         "attribute": [
             {"name": k, "type": v["type"], "description": v["description"], "minOccurs": 0, "maxOccurs": 1}
@@ -55,7 +55,7 @@ basic_req = MatchSchemaRequest(
 # Empty schema build
 _empty_req = MatchSchemaRequest(
     applicationSchema={"name": "ad_account", "description": "Active Directory user schema", "attribute": []},
-    midPointSchema={"name": "c:UserType", "description": "MidPoint user type schema", "attribute": []},
+    midPointSchema={"name": "UserType", "description": "MidPoint user type schema", "attribute": []},
 )
 
 
@@ -69,8 +69,8 @@ def test_build_match_schema_prompt_data_empty():
 _HALLU_JSON = json.dumps(
     {
         "pairs": [
-            {"MidPoint": "c:unknownAttr", "Resource": ["bogusAttr"]},
-            {"MidPoint": "c:uid", "Resource": ["sAMAccountName", "bogusAttr"]},
+            {"MidPoint": "unknownAttr", "Resource": ["bogusAttr"]},
+            {"MidPoint": "uid", "Resource": ["sAMAccountName", "bogusAttr"]},
         ]
     },
     indent=2,
@@ -81,7 +81,7 @@ _HALLU_JSON = json.dumps(
 @patch("src.modules.matching.service.get_default_llm", response_mock(_HALLU_JSON))
 async def test_ignore_hallucinated_attributes():
     resp = await match_midpoint_schema(basic_req)
-    expected = [SchemaAttributeMatch(midPointAttribute="c:uid", applicationAttribute="sAMAccountName")]
+    expected = [SchemaAttributeMatch(midPointAttribute="uid", applicationAttribute="sAMAccountName")]
     assert resp.attributeMatch == expected
 
 
@@ -89,8 +89,8 @@ async def test_ignore_hallucinated_attributes():
 _MULTI_PAIR_JSON = json.dumps(
     {
         "pairs": [
-            {"MidPoint": "c:telephoneNumber", "Resource": ["telephoneNumber"]},
-            {"MidPoint": "c:telephoneNumber", "Resource": ["mobile"]},
+            {"MidPoint": "telephoneNumber", "Resource": ["telephoneNumber"]},
+            {"MidPoint": "telephoneNumber", "Resource": ["mobile"]},
         ]
     },
     indent=2,
@@ -102,22 +102,22 @@ _MULTI_PAIR_JSON = json.dumps(
 async def test_multiple_pairs_same_midpoint():
     resp = await match_midpoint_schema(basic_req)
     expected = [
-        SchemaAttributeMatch(midPointAttribute="c:telephoneNumber", applicationAttribute="mobile"),
-        SchemaAttributeMatch(midPointAttribute="c:telephoneNumber", applicationAttribute="telephoneNumber"),
+        SchemaAttributeMatch(midPointAttribute="telephoneNumber", applicationAttribute="mobile"),
+        SchemaAttributeMatch(midPointAttribute="telephoneNumber", applicationAttribute="telephoneNumber"),
     ]
     resp.attributeMatch.sort(key=lambda m: m.applicationAttribute)
     assert resp.attributeMatch == expected
 
 
 # Test: Duplicate resources within one pair deduplicated
-_DUPLICATE_JSON = json.dumps({"pairs": [{"MidPoint": "c:name", "Resource": ["cn", "cn"]}]}, indent=2)
+_DUPLICATE_JSON = json.dumps({"pairs": [{"MidPoint": "name", "Resource": ["cn", "cn"]}]}, indent=2)
 
 
 @pytest.mark.asyncio
 @patch("src.modules.matching.service.get_default_llm", response_mock(_DUPLICATE_JSON))
 async def test_grouped_duplicates_removed():
     resp = await match_midpoint_schema(basic_req)
-    expected = [SchemaAttributeMatch(midPointAttribute="c:name", applicationAttribute="cn")]
+    expected = [SchemaAttributeMatch(midPointAttribute="name", applicationAttribute="cn")]
     assert resp.attributeMatch == expected
 
 
@@ -125,12 +125,12 @@ async def test_grouped_duplicates_removed():
 _FULL_JSON = json.dumps(
     {
         "pairs": [
-            {"MidPoint": "c:uid", "Resource": ["sAMAccountName"]},
-            {"MidPoint": "c:name", "Resource": ["cn"]},
-            {"MidPoint": "c:emailAddress", "Resource": ["mail"]},
-            {"MidPoint": "c:telephoneNumber", "Resource": ["telephoneNumber", "mobile"]},
-            {"MidPoint": "c:organizationalUnit", "Resource": ["department", "distinguishedName"]},
-            {"MidPoint": "c:employeeNumber", "Resource": []},
+            {"MidPoint": "uid", "Resource": ["sAMAccountName"]},
+            {"MidPoint": "name", "Resource": ["cn"]},
+            {"MidPoint": "emailAddress", "Resource": ["mail"]},
+            {"MidPoint": "telephoneNumber", "Resource": ["telephoneNumber", "mobile"]},
+            {"MidPoint": "organizationalUnit", "Resource": ["department", "distinguishedName"]},
+            {"MidPoint": "employeeNumber", "Resource": []},
         ]
     },
     indent=2,
@@ -148,13 +148,13 @@ async def test_full_grouped_example():
 
     mapping = {(m.midPointAttribute, m.applicationAttribute) for m in resp.attributeMatch}
     expected = {
-        ("c:uid", "sAMAccountName"),
-        ("c:name", "cn"),
-        ("c:emailAddress", "mail"),
-        ("c:telephoneNumber", "telephoneNumber"),
-        ("c:telephoneNumber", "mobile"),
-        ("c:organizationalUnit", "department"),
-        ("c:organizationalUnit", "distinguishedName"),
+        ("uid", "sAMAccountName"),
+        ("name", "cn"),
+        ("emailAddress", "mail"),
+        ("telephoneNumber", "telephoneNumber"),
+        ("telephoneNumber", "mobile"),
+        ("organizationalUnit", "department"),
+        ("organizationalUnit", "distinguishedName"),
     }
     assert mapping == expected
 

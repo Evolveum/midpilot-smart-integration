@@ -38,14 +38,14 @@ def _make_req(attrs: list[BaseSchemaAttribute]) -> SuggestExtensionRequest:
 def test_build_extension_prompt_data_basic():
     attrs = [
         BaseSchemaAttribute(
-            name="c:attributes/ri:personalNumber",
+            name="attributes/ri:personalNumber",
             type="xsd:string",
             minOccurs=0,
             maxOccurs=1,
             description="Employee personal number.",
         ),
         BaseSchemaAttribute(
-            name="c:attributes/ri:department",
+            name="attributes/ri:department",
             type="xsd:string",
             minOccurs=0,
             maxOccurs=1,
@@ -59,11 +59,11 @@ def test_build_extension_prompt_data_basic():
 
     payload = json.loads(data["Resource_schema"])  # avoid whitespace sensitivity
     assert payload == {
-        "c:attributes/ri:personalNumber": {
+        "attributes/ri:personalNumber": {
             "type": "xsd:string",
             "description": "Employee personal number.",
         },
-        "c:attributes/ri:department": {
+        "attributes/ri:department": {
             "type": "xsd:string",
             "description": "",
         },
@@ -71,7 +71,7 @@ def test_build_extension_prompt_data_basic():
 
     # Stats are required; ensure they are present and contain keys for provided attributes
     stats_payload = json.loads(data["Attribute_stats"])  # dict
-    assert set(stats_payload.keys()) == {"c:attributes/ri:personalNumber", "c:attributes/ri:department"}
+    assert set(stats_payload.keys()) == {"attributes/ri:personalNumber", "attributes/ri:department"}
 
 
 # ---- suggest_extension tests ----
@@ -79,25 +79,25 @@ def test_build_extension_prompt_data_basic():
 @patch(
     "src.modules.extension_att.service.get_default_llm",
     response_mock(
-        '{"extensionAttributes": ["  c:attributes/ri:department  ", "c:attributes/ri:personalNumber", "c:attributes/ri:unknown", "", "c:attributes/ri:department"]}'
+        '{"extensionAttributes": ["  attributes/ri:department  ", "attributes/ri:personalNumber", "attributes/ri:unknown", "", "attributes/ri:department"]}'
     ),
 )
 async def test_suggest_extension_filters_dedupes_and_preserves_order():
     attrs = [
         BaseSchemaAttribute(
-            name="c:attributes/ri:personalNumber",
+            name="attributes/ri:personalNumber",
             type="xsd:string",
             minOccurs=0,
             maxOccurs=1,
         ),
         BaseSchemaAttribute(
-            name="c:attributes/ri:department",
+            name="attributes/ri:department",
             type="xsd:string",
             minOccurs=0,
             maxOccurs=1,
         ),
         BaseSchemaAttribute(
-            name="c:attributes/ri:lastLogin",
+            name="attributes/ri:lastLogin",
             type="xsd:dateTime",
             minOccurs=0,
             maxOccurs=1,
@@ -108,8 +108,8 @@ async def test_suggest_extension_filters_dedupes_and_preserves_order():
     resp = await suggest_extension(req)
     assert resp == SuggestExtensionResponse(
         extensionAttributes=[
-            "c:attributes/ri:department",
-            "c:attributes/ri:personalNumber",
+            "attributes/ri:department",
+            "attributes/ri:personalNumber",
         ]
     )
 
@@ -122,7 +122,7 @@ async def test_suggest_extension_filters_dedupes_and_preserves_order():
 async def test_suggest_extension_parser_error():
     attrs = [
         BaseSchemaAttribute(
-            name="c:attributes/ri:uid",
+            name="attributes/ri:uid",
             type="xsd:string",
             minOccurs=0,
             maxOccurs=1,
