@@ -4,10 +4,19 @@
 
 import logging
 import sys
+from contextvars import ContextVar
 
 from colorlog import ColoredFormatter
 
 from src.config import config
+
+request_id: ContextVar[str] = ContextVar("request_id", default="-")
+
+
+class RequestContextFilter(logging.Filter):
+    def filter(self, record: logging.LogRecord) -> bool:
+        record.request_id = request_id.get()
+        return True
 
 
 def setup_logging():
@@ -19,15 +28,18 @@ def setup_logging():
     # Base logger config
     logging.basicConfig(
         level=level,
-        format="%(asctime)s | %(levelname)-8s | %(name)s | %(message)s",
+        format="%(asctime)s | %(levelname)-8s | %(name)s | request_id=%(request_id)s | %(message)s",
         handlers=[logging.StreamHandler(sys.stdout)],
     )
 
     root_logger = logging.getLogger()
+    for handler in root_logger.handlers:
+        if not any(isinstance(f, RequestContextFilter) for f in handler.filters):
+            handler.addFilter(RequestContextFilter())
 
     if config.logging.colors:
         color_formatter = ColoredFormatter(
-            "%(log_color)s%(asctime)s | %(levelname)-8s | %(name)s | %(message)s",
+            "%(log_color)s%(asctime)s | %(levelname)-8s | %(name)s | request_id=%(request_id)s | %(message)s",
             datefmt=None,
             reset=True,
             log_colors={

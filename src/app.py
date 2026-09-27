@@ -3,11 +3,14 @@
 # Licensed under the EUPL-1.2 or later.
 
 import logging
+from time import perf_counter
+from uuid import uuid4
 
 from fastapi import FastAPI, Request, Response
 from fastapi.responses import JSONResponse
 
 from .common.errors import ServiceUnavailableException
+from .common.logger import request_id
 from .config import config
 from .modules.health.schema import HealthResponse, HealthStatus
 from .modules.health.service import run_health_checks
@@ -28,35 +31,40 @@ def create_api() -> FastAPI:
 
     @app.middleware("http")
     async def log_requests(request: Request, call_next) -> Response:
-        """
-        Log every incoming request and its response at DEBUG level.
-        """
-        if logger.isEnabledFor(logging.DEBUG):
-            logger.debug(
-                "Incoming request: %s %s",
-                request.method,
-                request.url,
-            )
-
+        """Log request outcomes and correlate application logs without logging payloads."""
+        token = request_id.set(uuid4().hex)
+        started = perf_counter()
         try:
+            logger.debug("Request started: method=%s path=%s", request.method, request.url.path)
             response = await call_next(request)
-        except Exception:
-            logger.debug(
-                "Request failed: %s %s",
+            response.headers["X-Request-ID"] = request_id.get()
+            level = logging.INFO
+            if response.status_code >= 500:
+                level = logging.ERROR
+            elif response.status_code >= 400:
+                level = logging.WARNING
+            elif request.scope.get("route") and request.scope["route"].path == "/health":
+                level = logging.DEBUG
+            logger.log(
+                level,
+                "Request completed: method=%s path=%s status=%s duration_ms=%.1f",
                 request.method,
-                request.url,
-                exc_info=True,
+                request.url.path,
+                response.status_code,
+                (perf_counter() - started) * 1000,
+            )
+            return response
+        except Exception as exc:
+            logger.error(
+                "Request failed: method=%s path=%s status=500 duration_ms=%.1f error_type=%s",
+                request.method,
+                request.url.path,
+                (perf_counter() - started) * 1000,
+                type(exc).__name__,
             )
             raise
-
-        logger.debug(
-            "Outgoing response: %s %s | status=%s",
-            request.method,
-            request.url,
-            response.status_code,
-        )
-
-        return response
+        finally:
+            request_id.reset(token)
 
     @app.exception_handler(ServiceUnavailableException)
     async def service_unavailable_handler(request: Request, exc: ServiceUnavailableException) -> JSONResponse:

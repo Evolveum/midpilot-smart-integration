@@ -43,6 +43,25 @@ cp .env-example .env
 cp .env.test-example .env.test
 ```
 
+## Logging
+
+Set `LOGGING__LEVEL` to `debug`, `info` (default), `warning`, `error`, or `critical`.
+Application request logs use `INFO` for successful responses, `WARNING` for 4xx
+responses, and `ERROR` for 5xx responses and unhandled failures. They include the
+HTTP method, path, status, and elapsed time until the response headers are available.
+Successful `/health` requests are logged only at `DEBUG`.
+
+Use `LOGGING__LEVEL=debug` to see request starts and LLM chain starts/completions,
+including chain duration. Application logs include a generated `request_id` to
+correlate processing within a request; responses handled by the request middleware
+also expose it in the `X-Request-ID` header. The new request summaries omit query
+parameters, headers, and request/response bodies. Existing module error logs may
+include exception details; `DEBUG` is not a payload-redaction setting.
+
+Hypercorn access logs are controlled separately with `LOGGING__ACCESS_LOG`
+(default `true`). Set it to `false` if the application request summaries are sufficient.
+Use `LOGGING__COLORS=true` for colored terminal output.
+
 ## Running with Docker
 
 ### Requirements

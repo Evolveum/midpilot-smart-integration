@@ -5,6 +5,7 @@
 import asyncio
 import logging
 import ssl
+from time import perf_counter
 from typing import Any, Awaitable
 
 import httpx
@@ -81,6 +82,7 @@ def make_basic_chain(prompt: BasePromptTemplate, llm: ChatOpenAI, parser: BaseOu
 
     async def _instrumented(input_value: Any, config: RunnableConfig) -> Any:
         timeout = app_config.llm.request_timeout
+        started = perf_counter()
 
         logger.debug("LLM chain started, timeout=%ss", timeout)
 
@@ -90,7 +92,7 @@ def make_basic_chain(prompt: BasePromptTemplate, llm: ChatOpenAI, parser: BaseOu
             async with asyncio.timeout(timeout):
                 result = await invoke_with_auth_guard(inner_chain.ainvoke(input_value, config))
 
-            logger.debug("LLM chain completed")
+            logger.debug("LLM chain completed, duration_ms=%.1f", (perf_counter() - started) * 1000)
             return result
 
         except TimeoutError as exc:
