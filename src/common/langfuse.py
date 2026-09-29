@@ -10,7 +10,7 @@ from typing import Callable
 import httpx
 from fastapi import APIRouter, Request, Response
 from fastapi.routing import APIRoute
-from langfuse import Langfuse
+from langfuse import Langfuse, propagate_attributes
 from langfuse.langchain import CallbackHandler
 
 from ..config import config
@@ -61,12 +61,12 @@ class ObservedRoute(APIRoute):
 
         async def custom_route_handler(request: Request) -> Response:
             request_json = await request.json()
-            with langfuse.start_as_current_span(name="api_request", input=request_json) as span:
-                span.update_trace(name=request.url.path, tags=["smart_integration"])
-                response: Response = await original_route_handler(request)
-                response_json = json.loads(response.body)
-                span.update(output=response_json)
-                return response
+            with langfuse.start_as_current_observation(name="api_request", input=request_json) as span:
+                with propagate_attributes(trace_name=request.url.path, tags=["smart_integration"]):
+                    response: Response = await original_route_handler(request)
+                    response_json = json.loads(bytes(response.body))
+                    span.update(output=response_json)
+                    return response
 
         return custom_route_handler
 

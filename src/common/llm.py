@@ -9,9 +9,9 @@ from typing import Any, Awaitable
 
 import httpx
 import openai
-from langchain.output_parsers import RetryWithErrorOutputParser
-from langchain.prompts import BasePromptTemplate
+from langchain_classic.output_parsers import RetryWithErrorOutputParser
 from langchain_core.output_parsers import BaseOutputParser
+from langchain_core.prompts import BasePromptTemplate
 from langchain_core.runnables import Runnable, RunnableConfig, RunnableLambda, RunnableParallel
 from langchain_openai import ChatOpenAI
 
