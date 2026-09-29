@@ -6,7 +6,7 @@ from typing import List
 
 from pydantic import BaseModel, Field
 
-from ...common.schema import ResponseMetadata, get_response_metadata
+from ...common.schema import NormalizedPath, ResponseMetadata, get_response_metadata
 
 # -------------------------
 # Common types
@@ -16,7 +16,7 @@ from ...common.schema import ResponseMetadata, get_response_metadata
 class AttributeValue(BaseModel):
     """Single attribute-value item within one record (instance)."""
 
-    attribute: str = Field(..., description="Attribute path, e.g. 'email[*]/value'")
+    attribute: NormalizedPath = Field(..., description="Attribute path, e.g. 'email[*]/value'")
     value: List[str] = Field(..., description="List of values (single-valued => one item)")
 
 

@@ -7,7 +7,7 @@ from typing import List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from ...common.schema import BaseSchemaAttribute, ResponseMetadata, get_response_metadata
+from ...common.schema import BaseSchemaAttribute, NormalizedPath, ResponseMetadata, get_response_metadata
 
 
 # Allowed simple xsd types for clarity and request checks
@@ -34,7 +34,7 @@ class ValueExample(BaseModel):
         2) the attribute is present but its `value` list is empty (`[]`).
     """
 
-    name: str = Field(..., description="Name of the attribute")
+    name: NormalizedPath = Field(..., description="Name of the attribute")
     value: Optional[List[str]] = Field(None, description="List of values for this attribute")
 
 

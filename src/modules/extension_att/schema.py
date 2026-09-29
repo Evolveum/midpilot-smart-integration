@@ -6,7 +6,7 @@ from typing import List
 
 from pydantic import BaseModel, Field
 
-from ...common.schema import ApplicationSchema, ResponseMetadata, get_response_metadata
+from ...common.schema import ApplicationSchema, NormalizedPath, ResponseMetadata, get_response_metadata
 
 
 class BasicAttributeStats(BaseModel):
@@ -53,7 +53,7 @@ class SuggestExtensionRequest(BaseModel):
         ),
     )
 
-    attributeStats: dict[str, BasicAttributeStats] = Field(
+    attributeStats: dict[NormalizedPath, BasicAttributeStats] = Field(
         ...,
         description=(
             "Mapping from attribute name to basic stats (totalCount, nuniq, nmissing) "

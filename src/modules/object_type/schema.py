@@ -7,7 +7,7 @@ from typing import List, Optional, Tuple
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from src.common.schema import ApplicationSchema, ResponseMetadata, get_response_metadata
+from src.common.schema import ApplicationSchema, NormalizedPath, ResponseMetadata, get_response_metadata
 
 
 class RegenerateMode(str, Enum):
@@ -71,7 +71,7 @@ class AttributeStat(BaseModel):
     Raw MidPoint attribute statistics (unique, missing, and value counts).
     """
 
-    ref: str = Field(..., description="Attribute reference or name.")
+    ref: NormalizedPath = Field(..., description="Attribute reference or name.")
     uniqueValueCount: int = Field(..., description="Number of unique values.")
     missingValueCount: int = Field(..., description="Number of missing values.")
     valueCount: Optional[List[ValueCountStat]] = Field(
@@ -96,7 +96,7 @@ class AttributeTupleStat(BaseModel):
     Raw MidPoint tuple statistics for attribute pairs.
     """
 
-    ref: Tuple[str, str] = Field(..., description="Names of the two low-cardinality attributes.")
+    ref: Tuple[NormalizedPath, NormalizedPath] = Field(..., description="Names of the two low-cardinality attributes.")
     tupleCount: Optional[List[TupleValueCount]] = Field(None, description="Counts of value pairs in this cross-table.")
 
 
@@ -228,8 +228,8 @@ class ObjectTypeSuggestion(BaseModel):
     intent: str = Field(..., description="Usage context, e.g. 'admin', 'default'.")
     displayName: str = Field(..., description="A user-friendly name representing the combination of kind and intent")
     description: str = Field(..., description="A detailed explanation describing the chosen delineation")
-    filter: Optional[List[str]] = Field(None, description="List of MQL/MGL filter expressions.")
-    baseContextFilter: Optional[str] = Field(None, description="Base context filter expression.")
+    filter: Optional[List[NormalizedPath]] = Field(None, description="List of MQL/MGL filter expressions.")
+    baseContextFilter: Optional[NormalizedPath] = Field(None, description="Base context filter expression.")
     baseContextObjectClassName: Optional[str] = Field(
         None,
         description="Name of the base context object class, typically 'ri:organizationalUnit' when baseContextFilter is present.",

@@ -6,7 +6,7 @@ from typing import Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
-from ...common.schema import BaseSchemaAttribute, ResponseMetadata, get_response_metadata
+from ...common.schema import BaseSchemaAttribute, NormalizedPath, ResponseMetadata, get_response_metadata
 
 
 class BasicAttributeStats(BaseModel):
@@ -43,7 +43,7 @@ class SuggestExtensionCorrelatorsRequest(BaseModel):
         ...,
         description="MidPoint extension attributes (e.g., extension/ext:personalNumber) considered for correlation.",
     )
-    attributeStats: Dict[str, BasicAttributeStats] = Field(
+    attributeStats: Dict[NormalizedPath, BasicAttributeStats] = Field(
         ...,
         description="Mapping from attribute name to basic stats (totalCount, nuniq, nmissing) computed in midPoint.",
     )

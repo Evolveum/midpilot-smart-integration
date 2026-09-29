@@ -3,12 +3,18 @@
 # Licensed under the EUPL-1.2 or later.
 
 from enum import Enum
-from typing import List, Optional
+from typing import Annotated, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, BeforeValidator, Field
 
 from src.config import config
 from src.modules.utils import clean_description
+from src.utils import strip_common_prefix
+
+# A string field that silently normalizes legacy 'c:'-prefixed item paths/names
+# (e.g. 'c:attributes/ri:emptype' -> 'attributes/ri:emptype', 'c:UserType' -> 'UserType').
+# Works as dict key, list element and tuple member as well.
+NormalizedPath = Annotated[str, BeforeValidator(strip_common_prefix)]
 
 
 class ResponseMetadata(BaseModel):
@@ -43,7 +49,7 @@ class BaseSchemaAttribute(BaseModel):
       - [1, -1] → multi required
     """
 
-    name: str = Field(..., description="The attribute's name.")
+    name: NormalizedPath = Field(..., description="The attribute's name.")
     type: str = Field(..., description="The attribute's data type (e.g., 'xsd:string').")
     description: Optional[str] = Field(
         None,
@@ -68,7 +74,7 @@ class BaseSchema(BaseModel):
     Represents the overall schema with metadata and attributes.
     """
 
-    name: str = Field(..., description="The name of the schema or entity (e.g., 'account').")
+    name: NormalizedPath = Field(..., description="The name of the schema or entity (e.g., 'account').")
     description: Optional[str] = Field(
         None, description="Optional human-readable description of the schema. May contain xml and html tags."
     )
@@ -103,4 +109,6 @@ class MidpointSchema(BaseSchema):
     Represents the Midpoint schema with metadata and attributes.
     """
 
-    name: FocusType = Field(..., description="Name of Midpoint schema always represents a focus type.")
+    name: Annotated[FocusType, BeforeValidator(strip_common_prefix)] = Field(
+        ..., description="Name of Midpoint schema always represents a focus type."
+    )
