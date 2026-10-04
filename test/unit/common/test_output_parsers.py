@@ -5,7 +5,7 @@
 from textwrap import dedent
 
 import pytest
-from langchain.schema.output_parser import OutputParserException
+from langchain_core.exceptions import OutputParserException
 
 from src.common.output_parsers import CodeSnippetOutputParser
 

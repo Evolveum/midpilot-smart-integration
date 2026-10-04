@@ -8,14 +8,14 @@ from src.app import api
 
 _EXT_ATTRIBUTES = [
     {
-        "name": "c:extension/ext:personalNumber",
+        "name": "extension/ext:personalNumber",
         "type": "xsd:string",
         "description": "Unique personal number assigned by HR.",
         "minOccurs": 0,
         "maxOccurs": 1,
     },
     {
-        "name": "c:extension/ext:email",
+        "name": "extension/ext:email",
         "type": "xsd:string",
         "description": "Corporate email address.",
         "minOccurs": 0,
@@ -24,8 +24,8 @@ _EXT_ATTRIBUTES = [
 ]
 
 _STATS = {
-    "c:extension/ext:personalNumber": {"totalCount": 1000, "nuniq": 995, "nmissing": 5},
-    "c:extension/ext:email": {"totalCount": 1000, "nuniq": 980, "nmissing": 20},
+    "extension/ext:personalNumber": {"totalCount": 1000, "nuniq": 995, "nmissing": 5},
+    "extension/ext:email": {"totalCount": 1000, "nuniq": 980, "nmissing": 20},
 }
 
 
@@ -33,7 +33,7 @@ def test_suggest_extension_correlators_endpoint_integration() -> None:
     client = TestClient(api)
 
     payload = {
-        "schemaName": "c:UserType",
+        "schemaName": "UserType",
         "schemaDescription": "User type with typical HR-driven extensions",
         "extensionAttributes": _EXT_ATTRIBUTES,
         "attributeStats": _STATS,

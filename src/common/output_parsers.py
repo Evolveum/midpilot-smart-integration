@@ -2,7 +2,7 @@
 #
 # Licensed under the EUPL-1.2 or later.
 
-from langchain.schema.output_parser import OutputParserException
+from langchain_core.exceptions import OutputParserException
 from langchain_core.output_parsers import BaseOutputParser
 
 

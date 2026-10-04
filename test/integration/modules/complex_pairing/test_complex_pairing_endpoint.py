@@ -19,8 +19,8 @@ def test_complex_pairing_endpoint() -> None:
                     {
                         "identifier": "1",
                         "content": [
-                            {"attribute": "c:email[*]/value", "value": ["anna.novakova@firma.sk"]},
-                            {"attribute": "c:email[*]/type", "value": ["work"]},
+                            {"attribute": "email[*]/value", "value": ["anna.novakova@firma.sk"]},
+                            {"attribute": "email[*]/type", "value": ["work"]},
                         ],
                     }
                 ],
@@ -28,8 +28,8 @@ def test_complex_pairing_endpoint() -> None:
                     {
                         "identifier": "A1",
                         "content": [
-                            {"attribute": "c:primaryEmail/address", "value": ["ANNA.NOVAKOVA@FIRMA.SK"]},
-                            {"attribute": "c:primaryEmail/category", "value": ["work"]},
+                            {"attribute": "primaryEmail/address", "value": ["ANNA.NOVAKOVA@FIRMA.SK"]},
+                            {"attribute": "primaryEmail/category", "value": ["work"]},
                         ],
                     }
                 ],
@@ -39,8 +39,8 @@ def test_complex_pairing_endpoint() -> None:
                     {
                         "identifier": "2",
                         "content": [
-                            {"attribute": "c:email[*]/value", "value": ["adam.kral4@startup.io"]},
-                            {"attribute": "c:email[*]/type", "value": ["work"]},
+                            {"attribute": "email[*]/value", "value": ["adam.kral4@startup.io"]},
+                            {"attribute": "email[*]/type", "value": ["work"]},
                         ],
                     }
                 ],
@@ -48,8 +48,8 @@ def test_complex_pairing_endpoint() -> None:
                     {
                         "identifier": "B1",
                         "content": [
-                            {"attribute": "c:primaryEmail/address", "value": ["ADAM.KRAL4@STARTUP.IO"]},
-                            {"attribute": "c:primaryEmail/category", "value": ["work"]},
+                            {"attribute": "primaryEmail/address", "value": ["ADAM.KRAL4@STARTUP.IO"]},
+                            {"attribute": "primaryEmail/category", "value": ["work"]},
                         ],
                     }
                 ],

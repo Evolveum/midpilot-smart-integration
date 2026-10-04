@@ -3,8 +3,8 @@
 # Licensed under the EUPL-1.2 or later.
 
 import pytest
-from langchain.prompts import PromptTemplate
 from langchain_core.output_parsers import PydanticOutputParser
+from langchain_core.prompts import PromptTemplate
 from pydantic import BaseModel, Field
 
 from src.common.langfuse import langfuse_handler

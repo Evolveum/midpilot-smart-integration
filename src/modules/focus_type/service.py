@@ -4,7 +4,7 @@
 
 import logging
 
-from langchain.schema.output_parser import OutputParserException
+from langchain_core.exceptions import OutputParserException
 from langchain_core.prompts import ChatPromptTemplate
 
 from src.common.llm import get_default_llm, make_basic_chain

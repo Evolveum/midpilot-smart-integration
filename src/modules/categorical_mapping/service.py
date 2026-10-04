@@ -4,7 +4,7 @@
 
 import logging
 
-from langchain.schema.output_parser import OutputParserException
+from langchain_core.exceptions import OutputParserException
 from langchain_core.output_parsers import PydanticOutputParser
 
 from ...common.errors import LLMResponseValidationException

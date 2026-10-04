@@ -19,7 +19,7 @@ from src.modules.categorical_mapping.service import (
 from test.unit.modules.utils import response_mock
 
 APP_ATTR = BaseSchemaAttribute(name="ri:status", type="xsd:string", minOccurs=0, maxOccurs=1)
-MP_ATTR = BaseSchemaAttribute(name="c:activation/c:administrativeStatus", type="xsd:string", minOccurs=0, maxOccurs=1)
+MP_ATTR = BaseSchemaAttribute(name="activation/administrativeStatus", type="xsd:string", minOccurs=0, maxOccurs=1)
 MP_ENUM = ["enabled", "disabled", "archived"]
 
 
@@ -103,14 +103,14 @@ def test_build_prompt_data_attribute_names():
     data = build_prompt_data(req)
     assert data["app_attr_name"] == "ri:status"
     assert data["app_attr_type"] == "xsd:string"
-    assert data["mp_attr_name"] == "c:activation/c:administrativeStatus"
+    assert data["mp_attr_name"] == "activation/administrativeStatus"
 
 
 def test_build_prompt_data_lockout_status():
     req = SuggestCategoricalMappingRequest(
         applicationAttribute=BaseSchemaAttribute(name="ri:lockout", type="xsd:string", minOccurs=0, maxOccurs=1),
         midPointAttribute=BaseSchemaAttribute(
-            name="c:activation/c:lockoutStatus", type="xsd:string", minOccurs=0, maxOccurs=1
+            name="activation/lockoutStatus", type="xsd:string", minOccurs=0, maxOccurs=1
         ),
         inbound=True,
         applicationAttributeValue=["0", "1"],

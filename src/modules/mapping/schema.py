@@ -7,7 +7,7 @@ from typing import List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from ...common.schema import BaseSchemaAttribute, ResponseMetadata, get_response_metadata
+from ...common.schema import BaseSchemaAttribute, NormalizedPath, ResponseMetadata, get_response_metadata
 
 
 # Allowed simple xsd types for clarity and request checks
@@ -34,7 +34,7 @@ class ValueExample(BaseModel):
         2) the attribute is present but its `value` list is empty (`[]`).
     """
 
-    name: str = Field(..., description="Name of the attribute")
+    name: NormalizedPath = Field(..., description="Name of the attribute")
     value: Optional[List[str]] = Field(None, description="List of values for this attribute")
 
 
@@ -83,24 +83,24 @@ class SuggestMappingRequest(BaseModel):
         "json_schema_extra": {
             "example": {
                 "applicationAttribute": {
-                    "name": "c:attributes/icfs:name",
+                    "name": "attributes/icfs:name",
                     "type": "xsd:string",
                     "minOccurs": 1,
                     "maxOccurs": 1,
                 },
-                "midPointAttribute": {"name": "c:name", "type": "xsd:string", "minOccurs": 0, "maxOccurs": 1},
+                "midPointAttribute": {"name": "name", "type": "xsd:string", "minOccurs": 0, "maxOccurs": 1},
                 "inbound": True,
                 "example": [
                     {
-                        "application": [{"name": "c:attributes/icfs:name", "value": ["jack"]}],
-                        "midPoint": [{"name": "c:name", "value": ["JACK"]}],
+                        "application": [{"name": "attributes/icfs:name", "value": ["jack"]}],
+                        "midPoint": [{"name": "name", "value": ["JACK"]}],
                     },
                     {
-                        "application": [{"name": "c:attributes/icfs:name", "value": ["jim"]}],
-                        "midPoint": [{"name": "c:name", "value": ["JIM"]}],
+                        "application": [{"name": "attributes/icfs:name", "value": ["jim"]}],
+                        "midPoint": [{"name": "name", "value": ["JIM"]}],
                     },
                     {
-                        "midPoint": [{"name": "c:name", "value": ["empty"]}],
+                        "midPoint": [{"name": "name", "value": ["empty"]}],
                     },
                 ],
                 "errorLog": "Optional: Runtime error log from previous attempt.",

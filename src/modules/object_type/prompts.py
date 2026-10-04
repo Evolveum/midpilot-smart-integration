@@ -26,7 +26,7 @@ class Rule(BaseModel):
     # Base-context scope for the rule
     baseContextFilter: Optional[str] = Field(
         None,
-        description='MQL expression scoping the base context (e.g. "c:attributes/ri:dn = "ou=projects,dc=example,dc=com"").',
+        description='MQL expression scoping the base context (e.g. "attributes/ri:dn = "ou=projects,dc=example,dc=com"").',
     )
 
     def model_post_init(self, __context):
@@ -137,11 +137,11 @@ Assume prioritized predicates `PRIMARY_i` (MQL expressions for each priority):
 *(If using DN branches, place the DN base in `baseContextFilter` and other conditions in `filter`.)*
 
 ## `baseContextFilter` syntax
-- it MUST be a single string and MUST start with `c:attributes/ri:dn =`.
+- it MUST be a single string and MUST start with `attributes/ri:dn =`.
 - it CANNOT contain any MQL syntax
 - it MUST use `equals` operator
 - it CANNOT use other operators like `endsWith`, those are FORBIDDEN in `baseContextFilter`
-- Example: `c:attributes/ri:dn = "ou=employees,dc=example,dc=com"`
+- Example: `attributes/ri:dn = "ou=employees,dc=example,dc=com"`
 
 ## MQL Syntax Summary
 - Attributes are never PolyString.

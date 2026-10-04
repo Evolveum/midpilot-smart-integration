@@ -18,20 +18,20 @@ def test_suggest_extension_endpoint_shape():
             "description": "Test resource schema with UNMAPPED attributes",
             "attribute": [
                 {
-                    "name": "c:attributes/ri:personalNumber",
+                    "name": "attributes/ri:personalNumber",
                     "type": "xsd:string",
                     "minOccurs": 0,
                     "maxOccurs": 1,
                     "description": "Employee personal number.",
                 },
                 {
-                    "name": "c:attributes/ri:department",
+                    "name": "attributes/ri:department",
                     "type": "xsd:string",
                     "minOccurs": 0,
                     "maxOccurs": 1,
                 },
                 {
-                    "name": "c:attributes/ri:lastLogin",
+                    "name": "attributes/ri:lastLogin",
                     "type": "xsd:dateTime",
                     "minOccurs": 0,
                     "maxOccurs": 1,
@@ -39,9 +39,9 @@ def test_suggest_extension_endpoint_shape():
             ],
         },
         "attributeStats": {
-            "c:attributes/ri:personalNumber": {"totalCount": 1000, "nuniq": 1000, "nmissing": 0},
-            "c:attributes/ri:department": {"totalCount": 1000, "nuniq": 12, "nmissing": 5},
-            "c:attributes/ri:lastLogin": {"totalCount": 1000, "nuniq": 980, "nmissing": 20},
+            "attributes/ri:personalNumber": {"totalCount": 1000, "nuniq": 1000, "nmissing": 0},
+            "attributes/ri:department": {"totalCount": 1000, "nuniq": 12, "nmissing": 5},
+            "attributes/ri:lastLogin": {"totalCount": 1000, "nuniq": 980, "nmissing": 20},
         },
     }
 
