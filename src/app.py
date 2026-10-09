@@ -8,7 +8,6 @@ from uuid import uuid4
 
 from fastapi import FastAPI, Request, Response
 from fastapi.responses import JSONResponse
-from hypercorn.middleware import ProxyFixMiddleware
 
 from .common.errors import ServiceUnavailableException
 from .common.logger import request_id
@@ -21,7 +20,7 @@ from .utils import get_version_info
 logger = logging.getLogger(__name__)
 
 
-def create_api() -> ProxyFixMiddleware:
+def create_api() -> FastAPI:
     """
     Initialize and configure the FastAPI application.
 
@@ -82,7 +81,7 @@ def create_api() -> ProxyFixMiddleware:
             raise ServiceUnavailableException(result.model_dump())
         return result
 
-    return ProxyFixMiddleware(app, mode="legacy", trusted_hops=1)
+    return app
 
 
 api = create_api()

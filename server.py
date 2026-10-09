@@ -6,6 +6,7 @@ import asyncio
 
 from hypercorn.asyncio import serve
 from hypercorn.config import Config
+from hypercorn.middleware import ProxyFixMiddleware
 
 from src.app import api
 from src.common.logger import setup_logging
@@ -33,7 +34,7 @@ def run_application():
     if config.app.limit_max_requests:
         hypercorn_config.max_requests = config.app.limit_max_requests
 
-    asyncio.run(serve(api, hypercorn_config))
+    asyncio.run(serve(ProxyFixMiddleware(api, mode="legacy", trusted_hops=1), hypercorn_config))
 
 
 if __name__ == "__main__":
