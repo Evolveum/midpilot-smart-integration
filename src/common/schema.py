@@ -30,7 +30,7 @@ def get_response_metadata() -> ResponseMetadata:
     """
     Return ResponseMetadata instance with configured provider and model.
     """
-    return ResponseMetadata(provider=config.llm.openai_api_base, model=config.llm.model_name)
+    return ResponseMetadata(provider=config.llm.provider_name, model=config.llm.model_name)
 
 
 class BaseSchemaAttribute(BaseModel):
