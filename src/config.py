@@ -54,7 +54,7 @@ class LLMSettings(BaseModel):
     :param request_timeout: Timeout in seconds for the whole LLM chain/client call.
     :param openai_api_key: API key for OpenAI-compatible services.
     :param openai_api_base: Base URL for the API endpoint.
-    :param provider_name: Provider name exposed in response metadata instead of the base URL.
+    :param provider_name: Provider name used in health and status messages.
     :param model_name: Default model identifier to use.
     :param extra_body: Extra body used for provider-specific requests.
     :param ca_cert_file: Optional CA certificate file for internal TLS.
