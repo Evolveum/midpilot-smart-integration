@@ -4,7 +4,7 @@
 
 [project]
 name = "midpilot-smart-integration"
-version = "1.0.0"
+version = "1.0.1"
 description = "Smart Integration Microservice for schema matching, mapping, delineation and correlation."
 readme = "README.md"
 requires-python = ">=3.12"
