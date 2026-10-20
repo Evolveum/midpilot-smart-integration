@@ -67,11 +67,7 @@ class LLMSettings(BaseModel):
     model_name: str = "openai/gpt-oss-20b"
     reasoning_effort: str = "high"
     # extra_body is used for provider-specific requests
-    extra_body: Dict[str, Any] = Field(
-        default_factory=lambda: {
-            "provider": {"order": ["groq", "parasail", "deepinfra"]},
-        }
-    )
+    extra_body: Dict[str, Any] = Field(default_factory=dict)
     ca_cert_file: Optional[str] = None
 
 
