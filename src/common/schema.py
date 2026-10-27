@@ -78,7 +78,7 @@ class BaseSchema(BaseModel):
     description: Optional[str] = Field(
         None, description="Optional human-readable description of the schema. May contain xml and html tags."
     )
-    attribute: List[BaseSchemaAttribute] = Field(..., description="List of schema attributes.")
+    attribute: List[BaseSchemaAttribute] = Field(default_factory=list, description="List of schema attributes.")
 
     def model_post_init(self, __context):
         if self.description:

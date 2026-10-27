@@ -170,6 +170,29 @@ def test_suggest_object_type_with_dn_attribute():
         assert "description" in suggestion
 
 
+def test_suggest_object_type_without_attribute_statistics():
+    payload = {
+        "schema": {
+            "name": "ri:user",
+            "description": "Contains user entries",
+            "attribute": [
+                {"name": "attributes/ri:personal_number", "type": "xsd:string", "minOccurs": 1, "maxOccurs": 1},
+                {"name": "attributes/ri:email_address", "type": "xsd:string", "minOccurs": 0, "maxOccurs": 1},
+            ],
+        },
+        "statistics": {
+            "size": 100,
+            "coverage": 1.0,
+        },
+    }
+
+    with patch("src.modules.object_type.service.get_default_llm", response_mock(_SIMPLE_RULE_JSON)):
+        resp = client.post(f"{base_url}/objectType/suggestObjectType", json=payload)
+    assert resp.status_code == 200
+    data = resp.json()
+    assert "objectType" in data and isinstance(data["objectType"], list)
+
+
 def test_suggest_object_type_new_filter_regen():
     payload = {
         "schema": {

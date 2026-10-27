@@ -105,7 +105,7 @@ class Statistics(BaseModel):
     Standardized statistics model for object-type prompting or raw MidPoint stats.
     """
 
-    attribute: List[AttributeStat] = Field(..., description="List of attribute statistics.")
+    attribute: List[AttributeStat] = Field(default_factory=list, description="List of attribute statistics.")
     attributeTuple: Optional[List[AttributeTupleStat]] = Field(
         None, description="Optional cross-attribute tuple statistics."
     )
