@@ -50,7 +50,7 @@ async def run_health_checks() -> HealthResponse:
         await check_llm()
         checks.append(CheckResult(name="llm", status=HealthStatus.OK))
     except Exception as e:
-        logger.error("LLM health check failed: %s", e, exc_info=True)
+        logger.error("LLM provider is not reachable: %s", e)
         checks.append(CheckResult(name="llm", status=HealthStatus.ERROR, error=str(e)))
 
     if config.langfuse.tracing_enabled:
