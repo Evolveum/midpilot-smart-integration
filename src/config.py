@@ -62,9 +62,9 @@ class LLMSettings(BaseModel):
 
     request_timeout: int = 120
     openai_api_key: str = ""
-    openai_api_base: str = "https://openrouter.ai/api/v1"
-    provider_name: str = "openrouter"
-    model_name: str = "openai/gpt-oss-20b"
+    openai_api_base: str = ""
+    provider_name: str = ""
+    model_name: str = ""
     reasoning_effort: str = "high"
     # extra_body is used for provider-specific requests
     extra_body: Dict[str, Any] = Field(default_factory=dict)
